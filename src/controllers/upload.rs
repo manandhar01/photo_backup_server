@@ -1,3 +1,3 @@
-pub fn upload_photo() {
+pub async fn upload_photo() {
     println!("function for uploading photo");
 }

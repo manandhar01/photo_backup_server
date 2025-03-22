@@ -1,3 +1,3 @@
-pub fn health() {
+pub async fn health() {
     println!("This is health function");
 }
