@@ -10,6 +10,7 @@ mod handlers;
 mod middlewares;
 mod models;
 mod routes;
+mod services;
 mod utils;
 
 use crate::app::create_app;

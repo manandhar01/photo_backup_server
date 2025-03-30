@@ -8,13 +8,13 @@ use crate::dtos::{
     register::RegisterRequest,
     user::UserResponse,
 };
-use crate::handlers::user::{create_user, find_user_by_email};
+use crate::services::user::UserService;
 
 pub async fn register(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<RegisterRequest>,
 ) -> Result<Json<UserResponse>, (StatusCode, String)> {
-    let user = create_user(
+    let user = UserService::create_user(
         &state.db,
         &payload.email,
         &payload.username,
@@ -30,7 +30,7 @@ pub async fn login(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, (StatusCode, String)> {
-    let user = find_user_by_email(&state.db, &payload.email)
+    let user = UserService::find_user_by_email(&state.db, &payload.email)
         .await
         .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()))?;
 

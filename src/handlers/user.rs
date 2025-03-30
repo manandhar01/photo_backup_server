@@ -1,44 +1,33 @@
-use sqlx::PgPool;
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    Json,
+};
+use std::sync::Arc;
+use uuid::Uuid;
 
-use crate::{models::user::User, utils::hash::hash_password};
+use crate::app::AppState;
+use crate::dtos::user::UserResponse;
+use crate::services::user::UserService;
 
-pub async fn create_user(
-    pool: &sqlx::PgPool,
-    email: &str,
-    username: &str,
-    password: &str,
-) -> Result<User, sqlx::Error> {
-    let hashed_password = hash_password(password);
+pub async fn get_user_by_uuid(
+    State(state): State<Arc<AppState>>,
+    Path(uuid): Path<Uuid>,
+) -> Result<Json<UserResponse>, (StatusCode, String)> {
+    let user = UserService::find_user_by_uuid(&state.db, uuid)
+        .await
+        .map_err(|_| (StatusCode::NOT_FOUND, "User not found".to_string()))?;
 
-    let user = sqlx::query_as!(
-        User,
-        r#"
-        insert into users (email, username, password)
-        values ($1, $2, $3)
-        returning id, uuid, email, username, password, created_at, updated_at, deleted_at
-        "#,
-        email,
-        username,
-        hashed_password
-    )
-    .fetch_one(pool)
-    .await?;
-
-    Ok(user)
+    Ok(Json(user.into()))
 }
 
-pub async fn find_user_by_email(pool: &PgPool, email: &str) -> Result<User, sqlx::Error> {
-    let user = sqlx::query_as!(
-        User,
-        r#"
-        select id, uuid, email, username, password, created_at, updated_at, deleted_at
-        from users
-        where email ilike $1
-        "#,
-        email
-    )
-    .fetch_one(pool)
-    .await?;
+pub async fn get_user_by_id(
+    State(state): State<Arc<AppState>>,
+    Path(user_id): Path<i32>,
+) -> Result<Json<UserResponse>, (StatusCode, String)> {
+    let user = UserService::find_user_by_id(&state.db, user_id)
+        .await
+        .map_err(|_| (StatusCode::NOT_FOUND, "User not found".to_string()))?;
 
-    Ok(user)
+    Ok(Json(user.into()))
 }
