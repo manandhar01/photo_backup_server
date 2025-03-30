@@ -1,2 +1,5 @@
 [alias]
 "start:dev" = "watch -i uploads/ -x run"
+"migration:g" = "sqlx migrate add -r"
+"migration:r" = "sqlx migrate run"
+"migration:rev" = "sqlx migrate revert"
