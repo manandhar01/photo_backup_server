@@ -3,6 +3,7 @@ use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::sync::Arc;
 
 use crate::auth::routes::auth::auth_routes;
+use crate::media::routes::media::media_routes;
 use crate::test::routes::test::test_routes;
 use crate::user::routes::user::user_routes;
 
@@ -33,4 +34,5 @@ pub async fn create_app() -> Router {
         .merge(test_routes())
         .merge(auth_routes(app_state.clone()))
         .merge(user_routes(app_state.clone()))
+        .merge(media_routes(app_state.clone()))
 }
