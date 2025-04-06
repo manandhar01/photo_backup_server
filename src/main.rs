@@ -5,13 +5,9 @@ use tokio::net::TcpListener;
 mod app;
 mod auth;
 mod config;
-mod dtos;
-mod handlers;
-mod middlewares;
-mod models;
-mod routes;
-mod services;
-mod utils;
+mod test;
+mod user;
+mod utility;
 
 use crate::app::create_app;
 

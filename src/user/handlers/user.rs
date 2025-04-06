@@ -7,8 +7,8 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::app::AppState;
-use crate::dtos::user::UserResponse;
-use crate::services::user::UserService;
+use crate::user::dtos::user::UserResponse;
+use crate::user::services::user::UserService;
 
 pub async fn get_user_by_uuid(
     State(state): State<Arc<AppState>>,

@@ -1,6 +1,6 @@
 use axum::{routing::get, Router};
 
-use crate::handlers::test::test;
+use crate::test::handlers::test::test;
 
 pub fn test_routes() -> Router {
     Router::new()

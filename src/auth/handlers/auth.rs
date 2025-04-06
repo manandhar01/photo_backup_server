@@ -2,13 +2,14 @@ use axum::{extract::State, http::StatusCode, Json};
 use std::sync::Arc;
 
 use crate::app::AppState;
-use crate::auth::jwt::generate_token;
-use crate::dtos::{
-    login::{LoginRequest, LoginResponse},
-    register::RegisterRequest,
-    user::UserResponse,
+use crate::auth::{
+    dtos::{
+        login::{LoginRequest, LoginResponse},
+        register::RegisterRequest,
+    },
+    services::auth::AuthService,
 };
-use crate::services::user::UserService;
+use crate::user::{dtos::user::UserResponse, services::user::UserService};
 
 pub async fn register(
     State(state): State<Arc<AppState>>,
@@ -38,7 +39,7 @@ pub async fn login(
         return Err((StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()));
     }
 
-    let token = generate_token(&user.uuid.to_string()).map_err(|_| {
+    let token = AuthService::generate_token(&user.uuid.to_string()).map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             "Failed to generate token".to_string(),

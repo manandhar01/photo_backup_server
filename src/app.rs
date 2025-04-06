@@ -2,7 +2,9 @@ use axum::Router;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::sync::Arc;
 
-use crate::routes::api::create_routes;
+use crate::auth::routes::auth::auth_routes;
+use crate::test::routes::test::test_routes;
+use crate::user::routes::user::user_routes;
 
 pub struct AppState {
     pub db: PgPool,
@@ -27,5 +29,8 @@ pub async fn create_app() -> Router {
 
     let app_state = Arc::new(AppState { db: pool.clone() });
 
-    create_routes(app_state)
+    Router::new()
+        .merge(test_routes())
+        .merge(auth_routes(app_state.clone()))
+        .merge(user_routes(app_state.clone()))
 }

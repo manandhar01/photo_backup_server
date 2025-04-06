@@ -1,8 +1,8 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::models::user::User;
-use crate::utils::hash::hash_password;
+use crate::user::models::user::User;
+use crate::utility::hash::hash_password;
 
 pub struct UserService;
 

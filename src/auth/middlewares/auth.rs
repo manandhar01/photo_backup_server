@@ -1,6 +1,6 @@
 use axum::{extract::Request, http::StatusCode, middleware::Next, response::Response};
 
-use crate::auth::jwt::validate_token;
+use crate::auth::services::auth::AuthService;
 
 pub async fn auth_middleware(req: Request, next: Next) -> Result<Response, StatusCode> {
     let token = req
@@ -10,7 +10,7 @@ pub async fn auth_middleware(req: Request, next: Next) -> Result<Response, Statu
         .and_then(|h| h.strip_prefix("Bearer "));
 
     match token {
-        Some(token) => match validate_token(token) {
+        Some(token) => match AuthService::validate_token(token) {
             Ok(_) => Ok(next.run(req).await),
             Err(_) => Err(StatusCode::UNAUTHORIZED),
         },
