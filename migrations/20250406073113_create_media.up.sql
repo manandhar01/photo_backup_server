@@ -5,8 +5,8 @@ CREATE TABLE media (
     filename text NOT NULL,
     filepath text NOT NULL,
     media_type integer NOT NULL,
-    mime_type text,
     created_at timestamptz DEFAULT NOW(),
     updated_at timestamptz DEFAULT NOW(),
-    deleted_at timestamptz
+    deleted_at timestamptz,
+    attributes jsonb
 )

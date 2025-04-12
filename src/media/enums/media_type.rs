@@ -18,3 +18,15 @@ impl From<i32> for MediaType {
         }
     }
 }
+
+impl MediaType {
+    pub fn from_mime(mime: &str) -> MediaType {
+        if mime.starts_with("image/") {
+            MediaType::Photo
+        } else if mime.starts_with("video/") {
+            MediaType::Video
+        } else {
+            MediaType::Unknown
+        }
+    }
+}

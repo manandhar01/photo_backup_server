@@ -2,49 +2,83 @@ use axum::{
     extract::{Multipart, State},
     http::StatusCode,
     response::IntoResponse,
+    Extension,
 };
 use std::{
-    fs::{self, OpenOptions},
+    fs::{create_dir_all, OpenOptions},
     io::Write,
     sync::Arc,
 };
+use uuid::Uuid;
 
+use crate::app::AppState;
+use crate::auth::dtos::claims::Claims;
+use crate::media::enums::media_type::MediaType;
 use crate::media::services::media::MediaService;
-use crate::{app::AppState, media::enums::media_type::MediaType};
+use crate::user::services::user::UserService;
 
 pub async fn upload_chunk(
     State(state): State<Arc<AppState>>,
+    Extension(claims): Extension<Claims>,
     mut multipart: Multipart,
 ) -> impl IntoResponse {
-    while let Some(field) = multipart.next_field().await.unwrap() {
-        let name = field.name().unwrap_or_default().to_string();
-        let filename = sanitize_filename(field.file_name().unwrap());
-        let data = &field.bytes().await.unwrap();
-        let mime_type = infer::get(data).map_or("application/octet-stream", |t| t.mime_type());
+    let uuid = match Uuid::parse_str(&claims.sub) {
+        Ok(uuid) => uuid,
+        Err(_) => return StatusCode::UNAUTHORIZED,
+    };
 
-        println!("Field Name: {}", name);
-        println!("File Name: {}", filename);
-        println!("MIME Type: {}", mime_type);
-        println!("File Size: {}", data.len());
+    let user = match UserService::find_user_by_uuid(&state.db, uuid).await {
+        Ok(user) => user,
+        Err(_) => return StatusCode::UNAUTHORIZED,
+    };
 
-        let path = format!("./uploads/{}", filename);
-        let mut file = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(&path)
-            .unwrap();
-
-        file.write_all(data).unwrap();
+    let user_dir = format!("./uploads/{}", user.uuid);
+    if let Err(e) = create_dir_all(&user_dir) {
+        eprintln!("Failed to create upload dir: {}", e);
+        return StatusCode::INTERNAL_SERVER_ERROR;
     }
 
-    if true {
+    while let Some(field) = multipart.next_field().await.transpose() {
+        let field = match field {
+            Ok(f) => f,
+            Err(_) => return StatusCode::BAD_REQUEST,
+        };
+
+        let filename = match field.file_name() {
+            Some(name) => sanitize_filename(name),
+            None => return StatusCode::BAD_REQUEST,
+        };
+
+        let data = match field.bytes().await {
+            Ok(d) => d,
+            Err(_) => return StatusCode::BAD_REQUEST,
+        };
+
+        let mime_type = infer::get(&data)
+            .map_or("application/octet-stream", |t| t.mime_type())
+            .to_string();
+
+        let size = data.len() as u64;
+
+        let path = format!("{}/{}", user_dir, filename);
+
+        let mut file = match OpenOptions::new().create(true).append(true).open(&path) {
+            Ok(f) => f,
+            Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
+        };
+
+        if file.write_all(&data).is_err() {
+            return StatusCode::INTERNAL_SERVER_ERROR;
+        }
+
         let _media = MediaService::create_media(
             &state.db,
-            1,
-            "test",
-            "path",
-            MediaType::Photo as i32,
-            "mimetype",
+            user.id,
+            &filename,
+            &path,
+            MediaType::from_mime(&mime_type) as i32,
+            &mime_type,
+            size,
         )
         .await;
     }
@@ -52,14 +86,7 @@ pub async fn upload_chunk(
     StatusCode::CREATED
 }
 
-fn is_upload_complete(temp_dir: &str, total_chunks: usize) -> bool {
-    match fs::read_dir(temp_dir) {
-        Ok(entries) => entries.count() == total_chunks,
-        Err(_) => false,
-    }
-}
-
-pub fn sanitize_filename(filename: &str) -> String {
+fn sanitize_filename(filename: &str) -> String {
     let unsafe_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '\0'];
 
     let mut sanitized: String = filename
