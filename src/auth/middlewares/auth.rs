@@ -21,9 +21,6 @@ pub async fn auth_middleware(
         .and_then(|h| h.to_str().ok())
         .and_then(|h| h.strip_prefix("Bearer "));
 
-    let error_response =
-        || (StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()).into_response();
-
     if let Some(token) = token {
         if let Ok(claims) = AuthService::validate_token(token) {
             if let Ok(user) = UserService::find_user_by_uuid(&state.db, claims.sub).await {
@@ -33,5 +30,5 @@ pub async fn auth_middleware(
         }
     }
 
-    error_response()
+    (StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()).into_response()
 }
