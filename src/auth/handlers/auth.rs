@@ -39,7 +39,7 @@ pub async fn login(
         return Err((StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()));
     }
 
-    let token = AuthService::generate_token(&user.uuid.to_string()).map_err(|_| {
+    let token = AuthService::generate_token(user.uuid).map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             "Failed to generate token".to_string(),

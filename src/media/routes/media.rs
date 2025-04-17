@@ -8,6 +8,9 @@ use crate::media::handlers::media::upload_chunk;
 pub fn media_routes(app_state: Arc<AppState>) -> Router {
     Router::new()
         .route("/media", post(upload_chunk))
-        .layer(middleware::from_fn(auth_middleware))
+        .layer(middleware::from_fn_with_state(
+            app_state.clone(),
+            auth_middleware,
+        ))
         .with_state(app_state)
 }

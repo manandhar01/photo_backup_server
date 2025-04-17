@@ -1,26 +1,37 @@
-use axum::{extract::Request, http::StatusCode, middleware::Next, response::Response};
+use axum::{
+    extract::{Request, State},
+    http::StatusCode,
+    middleware::Next,
+    response::{IntoResponse, Response},
+};
+use std::sync::Arc;
 
+use crate::app::AppState;
 use crate::auth::services::auth::AuthService;
+use crate::user::services::user::UserService;
 
 pub async fn auth_middleware(
+    State(state): State<Arc<AppState>>,
     mut req: Request,
     next: Next,
-) -> Result<Response, (StatusCode, String)> {
+) -> Response {
     let token = req
         .headers()
         .get("Authorization")
         .and_then(|h| h.to_str().ok())
         .and_then(|h| h.strip_prefix("Bearer "));
 
-    match token {
-        Some(token) => match AuthService::validate_token(token) {
-            Ok(claims) => {
-                req.extensions_mut().insert(claims);
+    let error_response =
+        || (StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()).into_response();
 
-                Ok(next.run(req).await)
+    if let Some(token) = token {
+        if let Ok(claims) = AuthService::validate_token(token) {
+            if let Ok(user) = UserService::find_user_by_uuid(&state.db, claims.sub).await {
+                req.extensions_mut().insert(user.clone());
+                return next.run(req).await;
             }
-            Err(_) => Err((StatusCode::UNAUTHORIZED, "Invalid credentials".to_string())),
-        },
-        None => Err((StatusCode::UNAUTHORIZED, "Invalid credentials".to_string())),
+        }
     }
+
+    error_response()
 }

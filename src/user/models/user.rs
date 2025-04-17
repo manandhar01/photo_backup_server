@@ -21,3 +21,18 @@ impl User {
         verify(password, &self.password).unwrap_or(false)
     }
 }
+
+impl Clone for User {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id,
+            uuid: self.uuid,
+            email: self.email.clone(),
+            username: self.username.clone(),
+            password: self.password.clone(),
+            created_at: self.created_at,
+            updated_at: self.updated_at,
+            deleted_at: self.deleted_at,
+        }
+    }
+}

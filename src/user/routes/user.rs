@@ -9,6 +9,9 @@ pub fn user_routes(app_state: Arc<AppState>) -> Router {
     Router::new()
         .route("/user/id/{id}", get(get_user_by_id))
         .route("/user/uuid/{uuid}", get(get_user_by_uuid))
-        .layer(middleware::from_fn(auth_middleware))
+        .layer(middleware::from_fn_with_state(
+            app_state.clone(),
+            auth_middleware,
+        ))
         .with_state(app_state)
 }
