@@ -1,4 +1,7 @@
+use axum::http::StatusCode;
 use sqlx::PgPool;
+use std::fs::create_dir_all;
+use std::path::Path;
 use uuid::Uuid;
 
 use crate::user::models::user::User;
@@ -78,5 +81,21 @@ impl UserService {
         .await?;
 
         Ok(user)
+    }
+
+    pub async fn create_user_directory(user: &User) -> Result<(), (StatusCode, String)> {
+        let user_dir = format!("./uploads/{}", user.uuid);
+        let path = Path::new(&user_dir);
+
+        if !path.exists() {
+            create_dir_all(&user_dir).map_err(|_| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Could not create upload dir".to_string(),
+                )
+            })?;
+        }
+
+        Ok(())
     }
 }
