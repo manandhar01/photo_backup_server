@@ -14,12 +14,6 @@ impl MediaService {
         media_type: i32,
         attributes: MediaAttributes,
     ) -> Result<Media, sqlx::Error> {
-        // let attributes = MediaAttributes {
-        //     mime_type: Some(mime_type.to_string()),
-        //     size: Some(size),
-        //     ..Default::default()
-        // };
-
         let media = sqlx::query_as!(
             Media,
             r#"
