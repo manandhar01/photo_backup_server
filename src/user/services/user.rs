@@ -5,7 +5,6 @@ use std::path::Path;
 use uuid::Uuid;
 
 use crate::user::models::user::User;
-use crate::utility::hash::hash_password;
 
 pub struct UserService;
 
@@ -16,8 +15,6 @@ impl UserService {
         username: &str,
         password: &str,
     ) -> Result<User, sqlx::Error> {
-        let hashed_password = hash_password(password);
-
         let user = sqlx::query_as!(
             User,
             r#"
@@ -27,7 +24,7 @@ impl UserService {
         "#,
             email,
             username,
-            hashed_password
+            password
         )
         .fetch_one(pool)
         .await?;

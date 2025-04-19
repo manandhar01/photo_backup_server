@@ -10,16 +10,19 @@ use crate::auth::{
     services::auth::AuthService,
 };
 use crate::user::{dtos::user::UserResponse, services::user::UserService};
+use crate::utility::hash::hash_password;
 
 pub async fn register(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<RegisterRequest>,
 ) -> Result<Json<UserResponse>, (StatusCode, String)> {
+    let hashed_password = hash_password(&payload.password)?;
+
     let user = UserService::create_user(
         &state.db,
         &payload.email,
         &payload.username,
-        &payload.password,
+        &hashed_password,
     )
     .await
     .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;

@@ -1,4 +1,9 @@
 use axum::http::StatusCode;
+use sha2::{Digest, Sha256};
+use std::{
+    fs::File,
+    io::{BufReader, Read},
+};
 
 use crate::media::{
     models::media::MediaAttributes,
@@ -29,11 +34,40 @@ impl ExtractService {
         };
 
         if mime_type.starts_with("image/") {
-            PhotoService::extract_photo_metadata(filepath, &mut attributes)?;
+            PhotoService::extract_photo_metadata(filepath, &mut attributes);
         } else if mime_type.starts_with("video/") {
             VideoService::extract_video_metadata(filepath, &mut attributes)?;
         }
 
+        Self::generate_file_hash(filepath, &mut attributes);
+
         Ok(attributes)
+    }
+
+    fn generate_file_hash(path: &str, attributes: &mut MediaAttributes) {
+        let file = match File::open(path) {
+            Ok(file) => file,
+            Err(e) => return println!("{:?}", e.to_string()),
+        };
+
+        let mut bufreader = BufReader::new(file);
+        let mut hasher = Sha256::new();
+
+        let mut buffer = [0u8; 8192];
+        loop {
+            match bufreader.read(&mut buffer) {
+                Ok(bytes_read) => {
+                    if bytes_read == 0 {
+                        break;
+                    }
+                    hasher.update(&buffer[..bytes_read]);
+                }
+                Err(e) => return println!("{:?}", e.to_string()),
+            }
+        }
+
+        let result = hasher.finalize();
+
+        attributes.hash = Some(format!("{:x}", result));
     }
 }
