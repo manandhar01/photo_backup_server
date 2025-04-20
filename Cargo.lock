@@ -629,6 +629,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
+name = "ffprobe"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ffef835e1f9ac151db5bb2adbb95c9dfe1f315f987f011dd89cd655b4e9a52c"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "flume"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1594,12 +1604,12 @@ dependencies = [
  "bcrypt",
  "chrono",
  "dotenvy",
+ "ffprobe",
  "hyper",
  "imageinfo",
  "infer",
  "jsonwebtoken",
  "kamadak-exif",
- "mime",
  "rand 0.9.1",
  "serde",
  "serde_json",
@@ -2489,6 +2499,8 @@ dependencies = [
  "bitflags 2.9.0",
  "bytes",
  "http",
+ "http-body",
+ "http-body-util",
  "pin-project-lite",
  "tower-layer",
  "tower-service",

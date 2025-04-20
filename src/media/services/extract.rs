@@ -36,7 +36,7 @@ impl ExtractService {
         if mime_type.starts_with("image/") {
             PhotoService::extract_photo_metadata(filepath, &mut attributes);
         } else if mime_type.starts_with("video/") {
-            VideoService::extract_video_metadata(filepath, &mut attributes)?;
+            VideoService::extract_video_metadata(filepath, &mut attributes);
         }
 
         Self::generate_file_hash(filepath, &mut attributes);
@@ -47,7 +47,7 @@ impl ExtractService {
     fn generate_file_hash(path: &str, attributes: &mut MediaAttributes) {
         let file = match File::open(path) {
             Ok(file) => file,
-            Err(e) => return println!("{:?}", e.to_string()),
+            Err(e) => return eprintln!("{:?}", e),
         };
 
         let mut bufreader = BufReader::new(file);
@@ -62,7 +62,7 @@ impl ExtractService {
                     }
                     hasher.update(&buffer[..bytes_read]);
                 }
-                Err(e) => return println!("{:?}", e.to_string()),
+                Err(e) => return eprintln!("{:?}", e),
             }
         }
 

@@ -11,7 +11,7 @@ impl PhotoService {
     pub fn extract_photo_metadata(path: &str, attributes: &mut MediaAttributes) {
         let file = match File::open(path) {
             Ok(file) => file,
-            Err(e) => return println!("{:?}", e.to_string()),
+            Err(e) => return eprintln!("{:?}", e),
         };
 
         let mut bufreader = std::io::BufReader::new(file);
@@ -22,14 +22,14 @@ impl PhotoService {
                 attributes.height = Some(info.size.height as u32);
             }
             Err(e) => {
-                println!("{:?}", e.to_string());
+                eprintln!("{:?}", e);
             }
         }
 
         match bufreader.rewind() {
             Ok(_) => {}
             Err(e) => {
-                println!("{:?}", e.to_string());
+                eprintln!("{:?}", e);
             }
         }
 
@@ -79,7 +79,7 @@ impl PhotoService {
                 }
             }
             Err(e) => {
-                println!("{:?}", e.to_string());
+                eprintln!("{:?}", e);
             }
         }
     }

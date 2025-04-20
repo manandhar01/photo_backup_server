@@ -22,7 +22,9 @@ pub struct MediaAttributes {
     pub frame_rate: Option<f32>,
     pub video_codec: Option<String>,
     pub audio_codec: Option<String>,
-    pub bitrate: Option<u64>,
+    pub video_bitrate: Option<String>,
+    pub audio_bitrate: Option<String>,
+    pub sample_rate: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
