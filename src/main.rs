@@ -4,7 +4,6 @@ use tokio::net::TcpListener;
 
 mod app;
 mod auth;
-mod common;
 mod config;
 mod media;
 mod test;

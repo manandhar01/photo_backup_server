@@ -1,4 +1,5 @@
 use axum::http::StatusCode;
+use chrono::Utc;
 use sqlx::PgPool;
 use std::fs::create_dir_all;
 use std::path::Path;
@@ -17,11 +18,7 @@ impl UserService {
     ) -> Result<User, sqlx::Error> {
         let user = sqlx::query_as!(
             User,
-            r#"
-        insert into users (email, username, password)
-        values ($1, $2, $3)
-        returning id, uuid, email, username, password, created_at, updated_at, deleted_at
-        "#,
+            r#"insert into users (email, username, password) values ($1, $2, $3) returning *"#,
             email,
             username,
             password
@@ -32,52 +29,45 @@ impl UserService {
         Ok(user)
     }
 
-    pub async fn find_user_by_email(pool: &PgPool, email: &str) -> Result<User, sqlx::Error> {
-        let user = sqlx::query_as!(
+    pub async fn find_user_by_email(pool: &PgPool, email: &str) -> sqlx::Result<Option<User>> {
+        sqlx::query_as!(
             User,
-            r#"
-        select id, uuid, email, username, password, created_at, updated_at, deleted_at
-        from users
-        where email ilike $1
-        "#,
+            r#"select * from users where email ilike $1 and deleted_at is null"#,
             email
         )
-        .fetch_one(pool)
-        .await?;
-
-        Ok(user)
+        .fetch_optional(pool)
+        .await
     }
 
-    pub async fn find_user_by_uuid(pool: &PgPool, uuid: Uuid) -> Result<User, sqlx::Error> {
-        let user = sqlx::query_as!(
+    pub async fn find_user_by_uuid(pool: &PgPool, uuid: Uuid) -> sqlx::Result<Option<User>> {
+        sqlx::query_as!(
             User,
-            r#"
-        select id, uuid, email, username, password, created_at, updated_at, deleted_at
-        from users
-        where uuid = $1
-        "#,
+            r#"select * from users where uuid = $1 and deleted_at is null"#,
             uuid
         )
-        .fetch_one(pool)
-        .await?;
-
-        Ok(user)
+        .fetch_optional(pool)
+        .await
     }
 
-    pub async fn find_user_by_id(pool: &PgPool, user_id: i32) -> Result<User, sqlx::Error> {
-        let user = sqlx::query_as!(
+    pub async fn find_user_by_id(pool: &PgPool, user_id: i32) -> sqlx::Result<Option<User>> {
+        sqlx::query_as!(
             User,
-            r#"
-        select id, uuid, email, username, password, created_at, updated_at, deleted_at
-        from users
-        where id = $1
-        "#,
+            r#"select * from users where id = $1 and deleted_at is null"#,
             user_id
         )
-        .fetch_one(pool)
-        .await?;
+        .fetch_optional(pool)
+        .await
+    }
 
-        Ok(user)
+    pub async fn delete_user(pool: &PgPool, user_id: i32) -> sqlx::Result<Option<User>> {
+        sqlx::query_as!(
+            User,
+            r#"update users set deleted_at = $1 where id = $2 returning *"#,
+            Utc::now(),
+            user_id
+        )
+        .fetch_optional(pool)
+        .await
     }
 
     pub async fn create_user_directory(user: &User) -> Result<(), (StatusCode, String)> {

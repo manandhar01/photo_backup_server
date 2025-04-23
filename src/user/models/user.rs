@@ -1,10 +1,8 @@
 use bcrypt::verify;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, PgPool};
+use sqlx::FromRow;
 use uuid::Uuid;
-
-use crate::common::{services::model_ops::ModelOpsService, traits::model_ops::ModelOps};
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct User {
@@ -36,17 +34,5 @@ impl Clone for User {
             updated_at: self.updated_at,
             deleted_at: self.deleted_at,
         }
-    }
-}
-
-impl ModelOps for User {
-    // async fn find() -> sqlx::Result<Option<Self>> {}
-    //
-    // async fn create(&self) -> sqlx::Result<Self> {}
-
-    async fn soft_delete(&mut self, pool: &PgPool) -> sqlx::Result<()> {
-        ModelOpsService::soft_delete(pool, "users", self.id).await?;
-        self.deleted_at = Some(Utc::now());
-        Ok(())
     }
 }
