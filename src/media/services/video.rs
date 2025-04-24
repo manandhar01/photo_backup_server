@@ -1,26 +1,26 @@
 use ffprobe::ffprobe;
 
-use crate::media::models::media::MediaAttributes;
+use crate::media::models::media_metadata::MediaMetadata;
 
 pub struct VideoService {}
 
 impl VideoService {
-    pub fn extract_video_metadata(path: &str, attributes: &mut MediaAttributes) {
+    pub fn extract_video_metadata(path: &str, metadata: &mut MediaMetadata) {
         println!("{path}");
-        println!("{attributes:?}");
+        println!("{metadata:?}");
 
         match ffprobe(path) {
             Ok(info) => {
                 if let Some(duration_str) = &info.format.duration {
                     if let Ok(duration) = duration_str.parse::<f64>() {
-                        attributes.duration = Some(duration);
+                        metadata.duration = Some(duration);
                     }
                 }
 
                 if let Some(tags) = &info.format.tags {
                     if let Some(creation_time) = &tags.creation_time {
                         if let Ok(datetime) = chrono::DateTime::parse_from_rfc3339(creation_time) {
-                            attributes.taken_at = Some(datetime.naive_utc());
+                            metadata.taken_at = Some(datetime.naive_utc());
                         }
                     }
                 }
@@ -28,17 +28,17 @@ impl VideoService {
                 for stream in info.streams {
                     match stream.codec_type.as_deref() {
                         Some("video") => {
-                            attributes.video_codec = stream.codec_name.clone();
-                            attributes.width = stream.width.map(|w| w as u32);
-                            attributes.height = stream.height.map(|h| h as u32);
-                            attributes.video_bitrate = stream.bit_rate.clone();
-                            attributes.frame_rate =
+                            metadata.video_codec = stream.codec_name.clone();
+                            metadata.width = stream.width.map(|w| w as i32);
+                            metadata.height = stream.height.map(|h| h as i32);
+                            metadata.video_bitrate = stream.bit_rate.clone();
+                            metadata.frame_rate =
                                 Self::parse_ffmpeg_rational(&stream.avg_frame_rate);
                         }
                         Some("audio") => {
-                            attributes.audio_codec = stream.codec_name.clone();
-                            attributes.audio_bitrate = stream.bit_rate.clone();
-                            attributes.sample_rate = stream.sample_rate.clone();
+                            metadata.audio_codec = stream.codec_name.clone();
+                            metadata.audio_bitrate = stream.bit_rate.clone();
+                            metadata.sample_rate = stream.sample_rate.clone();
                         }
                         _ => {}
                     }

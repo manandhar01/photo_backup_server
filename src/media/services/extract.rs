@@ -6,7 +6,7 @@ use std::{
 };
 
 use crate::media::{
-    models::media::MediaAttributes,
+    models::media_metadata::MediaMetadata,
     services::{photo::PhotoService, video::VideoService},
 };
 
@@ -16,7 +16,7 @@ impl ExtractService {
     pub async fn extract_metadata(
         filepath: &str,
         original_filename: &str,
-    ) -> Result<MediaAttributes, (StatusCode, String)> {
+    ) -> Result<MediaMetadata, (StatusCode, String)> {
         let mime_type = infer::get_from_path(filepath)
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
             .map(|t| t.mime_type().to_string())
@@ -24,9 +24,9 @@ impl ExtractService {
 
         let size = std::fs::metadata(filepath)
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-            .len();
+            .len() as i64;
 
-        let mut attributes = MediaAttributes {
+        let mut metadata = MediaMetadata {
             mime_type: Some(mime_type.to_string()),
             size: Some(size),
             original_filename: Some(original_filename.to_string()),
@@ -34,17 +34,17 @@ impl ExtractService {
         };
 
         if mime_type.starts_with("image/") {
-            PhotoService::extract_photo_metadata(filepath, &mut attributes);
+            PhotoService::extract_photo_metadata(filepath, &mut metadata);
         } else if mime_type.starts_with("video/") {
-            VideoService::extract_video_metadata(filepath, &mut attributes);
+            VideoService::extract_video_metadata(filepath, &mut metadata);
         }
 
-        Self::generate_file_hash(filepath, &mut attributes);
+        Self::generate_file_hash(filepath, &mut metadata);
 
-        Ok(attributes)
+        Ok(metadata)
     }
 
-    fn generate_file_hash(path: &str, attributes: &mut MediaAttributes) {
+    fn generate_file_hash(path: &str, metadata: &mut MediaMetadata) {
         let file = match File::open(path) {
             Ok(file) => file,
             Err(e) => return eprintln!("{:?}", e),
@@ -68,6 +68,6 @@ impl ExtractService {
 
         let result = hasher.finalize();
 
-        attributes.hash = Some(format!("{:x}", result));
+        metadata.hash = Some(format!("{:x}", result));
     }
 }

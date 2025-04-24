@@ -1,7 +1,6 @@
 use rand::{distr::Alphanumeric, Rng};
-use sqlx::types::Json;
 
-use crate::media::models::media::{Media, MediaAttributes};
+use crate::media::models::media::Media;
 
 pub struct MediaService;
 
@@ -12,20 +11,14 @@ impl MediaService {
         filename: &str,
         filepath: &str,
         media_type: i32,
-        attributes: MediaAttributes,
     ) -> Result<Media, sqlx::Error> {
         let media = sqlx::query_as!(
             Media,
-            r#"
-                insert into media (user_id, filename, filepath, media_type, attributes)
-                values ($1, $2, $3, $4, $5)
-                returning id, uuid, user_id, filename, filepath, media_type, created_at, updated_at, deleted_at, attributes as "attributes: Json<MediaAttributes>"
-            "#,
+            r#"insert into media (user_id, filename, filepath, media_type) values ($1, $2, $3, $4) returning *"#,
             user_id,
             filename,
             filepath,
             media_type,
-            serde_json::json!(attributes)
         )
         .fetch_one(pool)
         .await?;

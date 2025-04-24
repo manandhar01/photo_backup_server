@@ -13,6 +13,8 @@ pub struct UserResponse {
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
     pub deleted_at: Option<DateTime<Utc>>,
+    pub created_by: Option<i32>,
+    pub updated_by: Option<i32>,
 }
 
 impl From<User> for UserResponse {
@@ -25,6 +27,8 @@ impl From<User> for UserResponse {
             created_at: user.created_at,
             updated_at: user.updated_at,
             deleted_at: user.deleted_at,
+            created_by: user.created_by,
+            updated_by: user.updated_by,
         }
     }
 }

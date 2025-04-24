@@ -3,12 +3,12 @@ use exif::{Reader, Tag};
 use imageinfo::ImageInfo;
 use std::{fs::File, io::Seek, str::FromStr};
 
-use crate::media::models::media::MediaAttributes;
+use crate::media::models::media_metadata::MediaMetadata;
 
 pub struct PhotoService {}
 
 impl PhotoService {
-    pub fn extract_photo_metadata(path: &str, attributes: &mut MediaAttributes) {
+    pub fn extract_photo_metadata(path: &str, metadata: &mut MediaMetadata) {
         let file = match File::open(path) {
             Ok(file) => file,
             Err(e) => return eprintln!("{:?}", e),
@@ -18,8 +18,8 @@ impl PhotoService {
 
         match ImageInfo::from_reader(&mut bufreader) {
             Ok(info) => {
-                attributes.width = Some(info.size.width as u32);
-                attributes.height = Some(info.size.height as u32);
+                metadata.width = Some(info.size.width as i32);
+                metadata.height = Some(info.size.height as i32);
             }
             Err(e) => {
                 eprintln!("{:?}", e);
@@ -39,39 +39,39 @@ impl PhotoService {
                     match field.tag {
                         Tag::PixelXDimension => {
                             if let (Ok(width), None) = (
-                                u32::from_str(&field.display_value().to_string()),
-                                attributes.width,
+                                i32::from_str(&field.display_value().to_string()),
+                                metadata.width,
                             ) {
-                                attributes.width = Some(width);
+                                metadata.width = Some(width);
                             }
                         }
                         Tag::PixelYDimension => {
                             if let (Ok(height), None) = (
-                                u32::from_str(&field.display_value().to_string()),
-                                attributes.height,
+                                i32::from_str(&field.display_value().to_string()),
+                                metadata.height,
                             ) {
-                                attributes.height = Some(height);
+                                metadata.height = Some(height);
                             }
                         }
                         Tag::Make => {
-                            attributes.camera_make = Some(field.display_value().to_string());
+                            metadata.camera_make = Some(field.display_value().to_string());
                         }
                         Tag::Model => {
-                            attributes.camera_model = Some(field.display_value().to_string());
+                            metadata.camera_model = Some(field.display_value().to_string());
                         }
                         Tag::FocalLength => {
-                            attributes.focal_length =
+                            metadata.focal_length =
                                 Some(field.display_value().with_unit(&exif).to_string());
                         }
                         Tag::ApertureValue => {
-                            attributes.aperture =
+                            metadata.aperture =
                                 Some(field.display_value().with_unit(&exif).to_string());
                         }
                         Tag::DateTimeOriginal | Tag::DateTime => {
                             let dt_str = field.display_value().to_string();
 
                             if let Some(datetime) = Self::parse_exif_datetime(&dt_str) {
-                                attributes.taken_at = Some(datetime);
+                                metadata.taken_at = Some(datetime);
                             }
                         }
                         _ => {}

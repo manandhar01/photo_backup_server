@@ -8,5 +8,6 @@ CREATE TABLE media (
     created_at timestamptz DEFAULT NOW(),
     updated_at timestamptz DEFAULT NOW(),
     deleted_at timestamptz,
-    attributes jsonb
+    created_by integer REFERENCES users(id),
+    updated_by integer REFERENCES users(id)
 )
