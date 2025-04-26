@@ -62,7 +62,7 @@ impl UserService {
     pub async fn delete_user(pool: &PgPool, user_id: i32) -> sqlx::Result<Option<User>> {
         sqlx::query_as!(
             User,
-            r#"update users set deleted_at = $1 where id = $2 returning *"#,
+            r#"update users set deleted_at = $1, updated_at = $1 where id = $2 returning *"#,
             Utc::now(),
             user_id
         )
