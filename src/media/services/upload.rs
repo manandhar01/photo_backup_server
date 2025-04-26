@@ -1,11 +1,11 @@
 use axum::{extract::multipart::Field, http::StatusCode};
-use std::{fs::OpenOptions, io::Write};
 
 use crate::media::{
     enums::media_type::MediaType,
     models::media::Media,
     services::{
-        extract::ExtractService, media::MediaService, media_metadata::MediaMetadataService,
+        extract::ExtractService, file::FileService, media::MediaService,
+        media_metadata::MediaMetadataService,
     },
 };
 use crate::user::{models::user::User, services::user::UserService};
@@ -23,7 +23,7 @@ impl UploadService {
             .map(|s| s.to_string())
             .ok_or((StatusCode::BAD_REQUEST, "Missing filename".to_string()))?;
 
-        let filename = MediaService::sanitize_filename(&original_filename);
+        let filename = FileService::sanitize_filename(&original_filename);
 
         let data = field
             .bytes()
@@ -34,7 +34,7 @@ impl UploadService {
         UserService::create_user_directory(user).await?;
         let path = format!("uploads/{}/{}", user.uuid, filename);
 
-        Self::save_file(&path, &data).await?;
+        FileService::save_file(&path, &data).await?;
 
         let mime_type = infer::get_from_path(&path)
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -51,25 +51,5 @@ impl UploadService {
         let _media_metadata = MediaMetadataService::create_metadata(db, &media, &metadata).await;
 
         Ok(media)
-    }
-
-    async fn save_file(path: &str, data: &[u8]) -> Result<(), (StatusCode, String)> {
-        let mut file = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)
-            .map_err(|_| {
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "File write error".to_string(),
-                )
-            })?;
-
-        file.write_all(data).map_err(|_| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "File write error".to_string(),
-            )
-        })
     }
 }

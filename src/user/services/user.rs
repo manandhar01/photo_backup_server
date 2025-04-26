@@ -5,6 +5,7 @@ use std::fs::create_dir_all;
 use std::path::Path;
 use uuid::Uuid;
 
+use crate::auth::services::auth::AuthService;
 use crate::user::models::user::User;
 
 pub struct UserService;
@@ -16,12 +17,17 @@ impl UserService {
         username: &str,
         password: &str,
     ) -> Result<User, sqlx::Error> {
+        let actor_id = AuthService::id();
+        let now = Utc::now();
+
         let user = sqlx::query_as!(
             User,
-            r#"insert into users (email, username, password) values ($1, $2, $3) returning *"#,
+            r#"insert into users (email, username, password, created_at, updated_at, created_by, updated_by) values ($1, $2, $3, $4, $4, $5, $5) returning *"#,
             email,
             username,
-            password
+            password,
+            now,
+            actor_id,
         )
         .fetch_one(pool)
         .await?;
@@ -60,10 +66,14 @@ impl UserService {
     }
 
     pub async fn delete_user(pool: &PgPool, user_id: i32) -> sqlx::Result<Option<User>> {
+        let actor_id = AuthService::id();
+        let now = Utc::now();
+
         sqlx::query_as!(
             User,
-            r#"update users set deleted_at = $1, updated_at = $1 where id = $2 returning *"#,
-            Utc::now(),
+            r#"update users set deleted_at = $1, updated_at = $1, updated_by = $2 where id = $3 returning *"#,
+            now,
+            actor_id,
             user_id
         )
         .fetch_optional(pool)
