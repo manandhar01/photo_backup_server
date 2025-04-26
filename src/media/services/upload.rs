@@ -48,12 +48,7 @@ impl UploadService {
             .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "DB error".to_string()))?;
 
         let metadata = ExtractService::extract_metadata(&path, &original_filename).await?;
-
-        if let Ok(media_metadata) =
-            MediaMetadataService::create_metadata(db, &media, &metadata).await
-        {
-            println!("{media_metadata:?}")
-        }
+        let _media_metadata = MediaMetadataService::create_metadata(db, &media, &metadata).await;
 
         Ok(media)
     }

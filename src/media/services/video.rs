@@ -6,9 +6,6 @@ pub struct VideoService {}
 
 impl VideoService {
     pub fn extract_video_metadata(path: &str, metadata: &mut MediaMetadata) {
-        println!("{path}");
-        println!("{metadata:?}");
-
         match ffprobe(path) {
             Ok(info) => {
                 if let Some(duration_str) = &info.format.duration {

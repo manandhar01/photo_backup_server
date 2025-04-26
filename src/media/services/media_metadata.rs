@@ -1,5 +1,6 @@
 use sqlx::PgPool;
 
+use crate::auth::services::auth::AuthService;
 use crate::media::models::{media::Media, media_metadata::MediaMetadata};
 
 pub struct MediaMetadataService {}
@@ -10,12 +11,15 @@ impl MediaMetadataService {
         media: &Media,
         metadata: &MediaMetadata,
     ) -> Result<MediaMetadata, sqlx::Error> {
+        let actor_id = AuthService::id();
+        let now = chrono::Utc::now();
+
         let row = sqlx::query_as!(
             MediaMetadata,
             r#"
                 insert into media_metadata
-                (media_id, original_filename, mime_type, size, width, height, hash, camera_make, camera_model, focal_length, aperture, taken_at, duration, frame_rate, video_codec, audio_codec, video_bitrate, audio_bitrate, sample_rate)
-                values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+                (media_id, original_filename, mime_type, size, width, height, hash, camera_make, camera_model, focal_length, aperture, taken_at, duration, frame_rate, video_codec, audio_codec, video_bitrate, audio_bitrate, sample_rate, created_at, updated_at, created_by, updated_by)
+                values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
                 returning *
             "#,
             media.id,
@@ -36,7 +40,11 @@ impl MediaMetadataService {
             metadata.audio_codec,
             metadata.video_bitrate,
             metadata.audio_bitrate,
-            metadata.sample_rate
+            metadata.sample_rate,
+            now,
+            now,
+            actor_id,
+            actor_id
         )
         .fetch_one(pool)
         .await?;

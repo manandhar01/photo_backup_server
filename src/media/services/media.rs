@@ -14,17 +14,20 @@ impl MediaService {
         filepath: &str,
         media_type: i32,
     ) -> Result<Media, sqlx::Error> {
-        let user_id = AuthService::user().map(|u| u.id);
+        let actor_id = AuthService::id();
+        let now = chrono::Utc::now();
 
         let media = sqlx::query_as!(
             Media,
-            r#"insert into media (user_id, filename, filepath, media_type, created_by, updated_by) values ($1, $2, $3, $4, $5, $6) returning *"#,
+            r#"insert into media (user_id, filename, filepath, media_type, created_at, updated_at, created_by, updated_by) values ($1, $2, $3, $4, $5, $6, $7, $8) returning *"#,
             owner.id,
             filename,
             filepath,
             media_type,
-            user_id,
-            user_id
+            now,
+            now,
+            actor_id,
+            actor_id
         )
         .fetch_one(pool)
         .await?;

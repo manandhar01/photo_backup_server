@@ -23,7 +23,6 @@ pub async fn auth_middleware(
     {
         if let Ok(claims) = AuthService::validate_token(token) {
             if let Ok(Some(user)) = UserService::find_user_by_uuid(&state.db, claims.sub).await {
-                let user = Arc::new(user);
                 req.extensions_mut().insert(user.clone());
 
                 return AuthService::login(user, async { next.run(req).await }).await;
