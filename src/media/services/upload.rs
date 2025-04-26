@@ -43,7 +43,7 @@ impl UploadService {
 
         let media_type = MediaType::from_mime(&mime_type) as i32;
 
-        let media = MediaService::create_media(db, user.id, &filename, &path, media_type)
+        let media = MediaService::create_media(db, user, &filename, &path, media_type)
             .await
             .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "DB error".to_string()))?;
 

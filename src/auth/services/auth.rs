@@ -1,9 +1,15 @@
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::auth::dtos::claims::Claims;
 use crate::config::{get_jwt_expiry, get_jwt_secret};
+use crate::user::models::user::User;
+
+tokio::task_local! {
+    pub static CURRENT_USER: Arc<User>;
+}
 
 pub struct AuthService;
 
@@ -35,5 +41,24 @@ impl AuthService {
             &Validation::default(),
         )
         .map(|data| data.claims)
+    }
+
+    pub fn user() -> Option<Arc<User>> {
+        CURRENT_USER.try_with(|u| u.clone()).ok()
+    }
+
+    // pub fn check() -> bool {
+    //     Self::user().is_some()
+    // }
+    //
+    // pub fn id() -> Option<i32> {
+    //     Self::user().map(|u| u.id)
+    // }
+
+    pub async fn login<R, F>(user: Arc<User>, fut: F) -> R
+    where
+        F: std::future::Future<Output = R>,
+    {
+        CURRENT_USER.scope(user, fut).await
     }
 }

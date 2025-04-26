@@ -15,17 +15,18 @@ pub async fn auth_middleware(
     mut req: Request,
     next: Next,
 ) -> Response {
-    let token = req
+    if let Some(token) = req
         .headers()
         .get("Authorization")
         .and_then(|h| h.to_str().ok())
-        .and_then(|h| h.strip_prefix("Bearer "));
-
-    if let Some(token) = token {
+        .and_then(|h| h.strip_prefix("Bearer "))
+    {
         if let Ok(claims) = AuthService::validate_token(token) {
-            if let Ok(user) = UserService::find_user_by_uuid(&state.db, claims.sub).await {
+            if let Ok(Some(user)) = UserService::find_user_by_uuid(&state.db, claims.sub).await {
+                let user = Arc::new(user);
                 req.extensions_mut().insert(user.clone());
-                return next.run(req).await;
+
+                return AuthService::login(user, async { next.run(req).await }).await;
             }
         }
     }
