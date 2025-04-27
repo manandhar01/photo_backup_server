@@ -5,11 +5,16 @@ use axum::{
 };
 use std::sync::Arc;
 
+use crate::app::AppState;
 use crate::media::{
-    dtos::media::MediaResponse, models::media::Media, services::upload::UploadService,
+    dtos::{
+        media_list_payload::MediaListPayload, media_list_response::MediaListResponse,
+        media_response::MediaResponse,
+    },
+    models::media::Media,
+    services::{media::MediaService, upload::UploadService},
 };
-use crate::user::models::user::User;
-use crate::{app::AppState, user::services::user::UserService};
+use crate::user::{models::user::User, services::user::UserService};
 
 pub async fn upload_chunk(
     State(state): State<Arc<AppState>>,
@@ -36,3 +41,18 @@ pub async fn upload_chunk(
         Ok(Json(response))
     }
 }
+
+pub async fn get_media_list(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<MediaListPayload>,
+) -> Result<Json<MediaListResponse>, (StatusCode, String)> {
+    match MediaService::media_list(&state.db, payload).await {
+        Ok(response) => Ok(Json(response)),
+        Err(_) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Something went wrong".to_string(),
+        )),
+    }
+}
+
+pub async fn get_media_detail() {}
