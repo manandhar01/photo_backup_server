@@ -2,10 +2,13 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::media::{enums::media_type::MediaType, models::media::Media};
+use crate::media::{
+    enums::media_type::MediaType,
+    models::{media::Media, media_metadata::MediaMetadata},
+};
 
-#[derive(Debug, Serialize)]
-pub struct MediaResponse {
+#[derive(Serialize)]
+pub struct MediaDetailResponse {
     pub id: i32,
     pub uuid: Uuid,
     pub user_id: i32,
@@ -17,11 +20,12 @@ pub struct MediaResponse {
     pub deleted_at: Option<DateTime<Utc>>,
     pub created_by: Option<i32>,
     pub updated_by: Option<i32>,
+    pub metadata: Option<MediaMetadata>,
 }
 
-impl From<Media> for MediaResponse {
-    fn from(media: Media) -> Self {
-        MediaResponse {
+impl From<(Media, MediaMetadata)> for MediaDetailResponse {
+    fn from((media, metadata): (Media, MediaMetadata)) -> Self {
+        Self {
             id: media.id,
             uuid: media.uuid,
             user_id: media.user_id,
@@ -33,6 +37,7 @@ impl From<Media> for MediaResponse {
             deleted_at: media.deleted_at,
             created_by: media.created_by,
             updated_by: media.updated_by,
+            metadata: Some(metadata),
         }
     }
 }

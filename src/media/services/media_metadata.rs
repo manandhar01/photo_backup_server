@@ -50,4 +50,19 @@ impl MediaMetadataService {
 
         Ok(row)
     }
+
+    pub async fn get_metadata_for_media(
+        pool: &PgPool,
+        media_id: i32,
+    ) -> Result<MediaMetadata, sqlx::Error> {
+        let metadata = sqlx::query_as!(
+            MediaMetadata,
+            r#"select * from media_metadata where deleted_at is null and media_id = $1"#,
+            media_id
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(metadata)
+    }
 }

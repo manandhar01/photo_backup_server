@@ -5,7 +5,6 @@ use crate::media::{
     dtos::{
         media_list_payload::MediaListPayload,
         media_list_response::{MediaListResponse, PaginationMetadata},
-        media_response::MediaResponse,
     },
     models::media::Media,
 };
@@ -62,7 +61,7 @@ impl MediaService {
             .unwrap_or(0);
 
         let response = MediaListResponse {
-            data: media.into_iter().map(MediaResponse::from).collect(),
+            data: media,
             pagination: PaginationMetadata {
                 limit,
                 offset,
@@ -71,5 +70,17 @@ impl MediaService {
         };
 
         Ok(response)
+    }
+
+    pub async fn media_detail(pool: &sqlx::PgPool, id: i32) -> Result<Media, sqlx::Error> {
+        let media = sqlx::query_as!(
+            Media,
+            r#"select * from media where deleted_at is null and id = $1"#,
+            id
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(media)
     }
 }

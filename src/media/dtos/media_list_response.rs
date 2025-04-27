@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::media::dtos::media_response::MediaResponse;
+use crate::media::models::media::Media;
 
 #[derive(Serialize)]
 pub struct PaginationMetadata {
@@ -11,6 +11,6 @@ pub struct PaginationMetadata {
 
 #[derive(Serialize)]
 pub struct MediaListResponse {
-    pub data: Vec<MediaResponse>,
+    pub data: Vec<Media>,
     pub pagination: PaginationMetadata,
 }
