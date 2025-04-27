@@ -1,6 +1,11 @@
 use axum::Router;
+use hyper::{
+    header::{AUTHORIZATION, CONTENT_TYPE},
+    Method,
+};
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::sync::Arc;
+use tower_http::cors::CorsLayer;
 
 use crate::auth::routes::auth::auth_routes;
 use crate::media::routes::media::media_routes;
@@ -30,9 +35,19 @@ pub async fn create_app() -> Router {
 
     let app_state = Arc::new(AppState { db: pool.clone() });
 
+    let frontend_origin =
+        std::env::var("FRONTEND_ORIGIN").unwrap_or("http://localhost:3000".to_string());
+    let allowed_origins = [frontend_origin.parse().unwrap()];
+
+    let cors = CorsLayer::new()
+        .allow_origin(allowed_origins)
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers([AUTHORIZATION, CONTENT_TYPE]);
+
     Router::new()
         .merge(test_routes())
         .merge(auth_routes(app_state.clone()))
         .merge(user_routes(app_state.clone()))
         .merge(media_routes(app_state.clone()))
+        .layer(cors)
 }
