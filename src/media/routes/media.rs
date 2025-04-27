@@ -1,6 +1,5 @@
 use axum::{middleware, routing::post, Router};
 use std::sync::Arc;
-use tower_http::limit::RequestBodyLimitLayer;
 
 use crate::app::AppState;
 use crate::auth::middlewares::auth::auth_middleware;
@@ -13,6 +12,5 @@ pub fn media_routes(app_state: Arc<AppState>) -> Router {
             app_state.clone(),
             auth_middleware,
         ))
-        .layer(RequestBodyLimitLayer::new(20 * 1024 * 1024))
         .with_state(app_state)
 }
