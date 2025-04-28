@@ -1,6 +1,5 @@
 use axum::{
     extract::{Request, State},
-    http::StatusCode,
     middleware::Next,
     response::{IntoResponse, Response},
 };
@@ -8,6 +7,7 @@ use std::sync::Arc;
 
 use crate::app::AppState;
 use crate::auth::services::auth::AuthService;
+use crate::errors::app_error::AppError;
 use crate::user::services::user::UserService;
 
 pub async fn auth_middleware(
@@ -30,5 +30,5 @@ pub async fn auth_middleware(
         }
     }
 
-    (StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()).into_response()
+    AppError::Unauthorized("Invalid credentials".to_string()).into_response()
 }

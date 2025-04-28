@@ -1,4 +1,4 @@
-use axum::{extract::State, http::StatusCode, Json};
+use axum::{extract::State, Json};
 use std::sync::Arc;
 
 use crate::app::AppState;
@@ -9,13 +9,14 @@ use crate::auth::{
     },
     services::auth::AuthService,
 };
+use crate::errors::app_error::AppError;
 use crate::user::{dtos::user::UserResponse, services::user::UserService};
 use crate::utility::hash::hash_password;
 
 pub async fn register(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<RegisterRequest>,
-) -> Result<Json<UserResponse>, (StatusCode, String)> {
+) -> Result<Json<UserResponse>, AppError> {
     let hashed_password = hash_password(&payload.password)?;
 
     let user = UserService::create_user(
@@ -25,7 +26,7 @@ pub async fn register(
         &hashed_password,
     )
     .await
-    .map_err(|err| (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()))?;
+    .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?;
 
     Ok(Json(user.into()))
 }
@@ -33,26 +34,22 @@ pub async fn register(
 pub async fn login(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<LoginRequest>,
-) -> Result<Json<LoginResponse>, (StatusCode, String)> {
+) -> Result<Json<LoginResponse>, AppError> {
     let user = UserService::find_user_by_email(&state.db, &payload.email)
         .await
-        .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()))?;
+        .map_err(|_| AppError::Unauthorized("Invalid credentials".to_string()))?;
 
     match user {
         Some(user) => {
             if !user.verify_password(&payload.password) {
-                return Err((StatusCode::UNAUTHORIZED, "Invalid credentials".to_string()));
+                return Err(AppError::Unauthorized("Invalid credentials".to_string()));
             }
 
-            let token = AuthService::generate_token(user.uuid).map_err(|_| {
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "Failed to generate token".to_string(),
-                )
-            })?;
+            let token = AuthService::generate_token(user.uuid)
+                .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?;
 
             Ok(Json(LoginResponse { token }))
         }
-        None => Err((StatusCode::UNAUTHORIZED, "Invalid credentials".to_string())),
+        None => Err(AppError::Unauthorized("Invalid credentials".to_string())),
     }
 }

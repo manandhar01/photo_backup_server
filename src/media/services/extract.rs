@@ -1,10 +1,10 @@
-use axum::http::StatusCode;
 use sha2::{Digest, Sha256};
 use std::{
     fs::File,
     io::{BufReader, Read},
 };
 
+use crate::errors::app_error::AppError;
 use crate::media::{
     models::media_metadata::MediaMetadata,
     services::{photo::PhotoService, video::VideoService},
@@ -16,14 +16,14 @@ impl ExtractService {
     pub async fn extract_metadata(
         filepath: &str,
         original_filename: &str,
-    ) -> Result<MediaMetadata, (StatusCode, String)> {
+    ) -> Result<MediaMetadata, AppError> {
         let mime_type = infer::get_from_path(filepath)
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+            .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?
             .map(|t| t.mime_type().to_string())
             .unwrap_or_else(|| "application/octet-stream".to_string());
 
         let size = std::fs::metadata(filepath)
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+            .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?
             .len() as i64;
 
         let mut metadata = MediaMetadata {

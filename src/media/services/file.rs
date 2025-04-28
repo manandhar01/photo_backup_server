@@ -1,28 +1,20 @@
-use axum::http::StatusCode;
 use rand::{distr::Alphanumeric, Rng};
 use std::{fs::OpenOptions, io::Write};
+
+use crate::errors::app_error::AppError;
 
 pub struct FileService {}
 
 impl FileService {
-    pub async fn save_file(path: &str, data: &[u8]) -> Result<(), (StatusCode, String)> {
+    pub async fn save_file(path: &str, data: &[u8]) -> Result<(), AppError> {
         let mut file = OpenOptions::new()
             .create(true)
             .append(true)
             .open(path)
-            .map_err(|_| {
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "File write error".to_string(),
-                )
-            })?;
+            .map_err(|_| AppError::InternalServerError("File write error".to_string()))?;
 
-        file.write_all(data).map_err(|_| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "File write error".to_string(),
-            )
-        })
+        file.write_all(data)
+            .map_err(|_| AppError::InternalServerError("File write error".to_string()))
     }
 
     pub fn sanitize_filename(filename: &str) -> String {
