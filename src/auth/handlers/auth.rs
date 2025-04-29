@@ -6,6 +6,7 @@ use crate::auth::{
     dtos::{
         login::{LoginRequest, LoginResponse},
         register::RegisterRequest,
+        verify_token_response::VerifyTokenResponse,
     },
     services::auth::AuthService,
 };
@@ -52,4 +53,8 @@ pub async fn login(
         }
         None => Err(AppError::Unauthorized("Invalid credentials".to_string())),
     }
+}
+
+pub async fn verify() -> Json<VerifyTokenResponse> {
+    Json(VerifyTokenResponse { valid: true })
 }
