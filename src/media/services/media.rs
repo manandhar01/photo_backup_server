@@ -45,10 +45,12 @@ impl MediaService {
     ) -> Result<MediaListResponse, sqlx::Error> {
         let limit = payload.limit.unwrap_or(20);
         let offset = payload.offset.unwrap_or(0);
+        let user_id = AuthService::id();
 
         let media = sqlx::query_as!(
             Media,
-            r#"select * from media where deleted_at is null order by id desc limit $1 offset $2"#,
+            r#"select * from media where deleted_at is null and user_id = $1 order by id desc limit $2 offset $3"#,
+            user_id,
             limit,
             offset
         )
