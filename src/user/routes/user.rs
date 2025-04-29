@@ -5,12 +5,13 @@ use axum::{
 };
 use std::sync::Arc;
 
+use crate::app::AppState;
 use crate::auth::middlewares::auth::auth_middleware;
-use crate::user::handlers::user::{get_user_by_id, get_user_by_uuid};
-use crate::{app::AppState, user::handlers::user::delete_user};
+use crate::user::handlers::user::{delete_user, get_self, get_user_by_id, get_user_by_uuid};
 
 pub fn user_routes(app_state: Arc<AppState>) -> Router {
     Router::new()
+        .route("/user/self", get(get_self))
         .route("/user/id/{id}", get(get_user_by_id))
         .route("/user/uuid/{uuid}", get(get_user_by_uuid))
         .route("/user/id/{id}", delete(delete_user))
