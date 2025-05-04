@@ -1,5 +1,9 @@
 use rand::{distr::Alphanumeric, Rng};
-use std::{fs::OpenOptions, io::Write};
+use std::path::Path;
+use tokio::{
+    fs::{self, File},
+    io::AsyncWriteExt,
+};
 
 use crate::errors::app_error::AppError;
 
@@ -7,14 +11,20 @@ pub struct FileService {}
 
 impl FileService {
     pub async fn save_file(path: &str, data: &[u8]) -> Result<(), AppError> {
-        let mut file = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)
-            .map_err(|_| AppError::InternalServerError("File write error".to_string()))?;
+        let path = Path::new(path);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).await.map_err(|e| {
+                AppError::InternalServerError(format!("Failed to create directories: {}", e))
+            })?;
+        }
+
+        let mut file = File::create(path)
+            .await
+            .map_err(|e| AppError::InternalServerError(format!("Failed to create file: {}", e)))?;
 
         file.write_all(data)
-            .map_err(|_| AppError::InternalServerError("File write error".to_string()))
+            .await
+            .map_err(|e| AppError::InternalServerError(format!("Failed to write file: {}", e)))
     }
 
     pub fn sanitize_filename(filename: &str) -> String {

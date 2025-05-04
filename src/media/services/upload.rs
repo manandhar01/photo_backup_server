@@ -1,4 +1,5 @@
 use axum::extract::multipart::Field;
+use serde::{Deserialize, Serialize};
 
 use crate::errors::app_error::AppError;
 use crate::media::{
@@ -12,6 +13,14 @@ use crate::media::{
 use crate::user::{models::user::User, services::user::UserService};
 
 pub struct UploadService;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UploadResponse {
+    pub success: bool,
+    pub message: String,
+    pub chunk_received: usize,
+    pub file_id: Option<String>,
+}
 
 impl UploadService {
     pub async fn handle_upload_field(

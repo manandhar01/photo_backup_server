@@ -8,6 +8,7 @@ use crate::media::routes::media::media_routes;
 use crate::test::routes::test::test_routes;
 use crate::user::routes::user::user_routes;
 
+#[derive(Debug, Clone)]
 pub struct AppState {
     pub db: PgPool,
 }
