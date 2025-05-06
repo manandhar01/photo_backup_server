@@ -85,4 +85,21 @@ impl MediaService {
 
         Ok(media)
     }
+
+    pub async fn check_media_access(
+        pool: &sqlx::PgPool,
+        id: i32,
+        user_id: i32,
+    ) -> Result<Media, sqlx::Error> {
+        let media = sqlx::query_as!(
+            Media,
+            r#"select * from media where deleted_at is null and id = $1 and user_id = $2"#,
+            id,
+            user_id
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(media)
+    }
 }
