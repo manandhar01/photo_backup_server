@@ -42,6 +42,7 @@ impl From<AppError> for ErrorResponse {
             AppError::InternalServerError(message) => {
                 ErrorResponse::new(StatusCode::INTERNAL_SERVER_ERROR, message)
             }
+            AppError::EndOfFile => ErrorResponse::new(StatusCode::NO_CONTENT, "".to_string()),
         }
     }
 }

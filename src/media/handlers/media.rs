@@ -41,15 +41,20 @@ pub async fn download_chunk(
         .await
         .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
 
-    let body = DownloadService::download_chunk(&media.filepath, payload).await?;
+    let (body, bytes_read) = DownloadService::download_chunk(&media.filepath, &payload).await?;
 
-    let response = match Response::builder()
+    let response = Response::builder()
         .header("Content-Type", "application/octet-stream")
+        .header(
+            "Content-Range",
+            format!(
+                "bytes {}-{}/?",
+                payload.offset,
+                payload.offset + bytes_read as u64 - 1
+            ),
+        )
         .body(body)
-    {
-        Ok(res) => res,
-        Err(_) => return Err(AppError::InternalServerError("Something went wrong".into())),
-    };
+        .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
 
     Ok(response)
 }

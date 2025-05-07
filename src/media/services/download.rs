@@ -1,39 +1,37 @@
 use axum::body::Body;
-use std::{
-    fs::File,
-    io::{Read, Seek, SeekFrom},
-};
+use tokio::fs::File;
+use tokio::io::{AsyncReadExt, AsyncSeekExt, SeekFrom};
 
-use crate::{
-    errors::app_error::AppError, media::dtos::media_download_payload::MediaDownloadPayload,
-};
+use crate::errors::app_error::AppError;
+use crate::media::dtos::media_download_payload::MediaDownloadPayload;
 
 pub struct DownloadService {}
 
 impl DownloadService {
     pub async fn download_chunk(
         file_path: &str,
-        payload: MediaDownloadPayload,
-    ) -> Result<Body, AppError> {
-        let mut file = match File::open(file_path) {
-            Ok(f) => f,
-            Err(_) => return Err(AppError::InternalServerError("Something went wrong".into())),
-        };
+        payload: &MediaDownloadPayload,
+    ) -> Result<(Body, usize), AppError> {
+        let mut file = File::open(file_path)
+            .await
+            .map_err(|_| AppError::InternalServerError("Failed to open file".into()))?;
 
-        let mut buffer = vec![0; payload.chunk_size];
-        if file.seek(SeekFrom::Start(payload.offset)).is_err() {
-            return Err(AppError::InternalServerError("Something went wrong".into()));
-        }
+        file.seek(SeekFrom::Start(payload.offset))
+            .await
+            .map_err(|_| AppError::InternalServerError("Failed to seek file".into()))?;
 
-        let bytes_read = match file.read(&mut buffer) {
-            Ok(n) => n,
-            Err(_) => return Err(AppError::InternalServerError("Something went wrong".into())),
-        };
+        let mut buffer = vec![0u8; payload.chunk_size];
+        let bytes_read = file
+            .read(&mut buffer)
+            .await
+            .map_err(|_| AppError::InternalServerError("Failed to read file".into()))?;
 
         if bytes_read == 0 {
-            return Err(AppError::InternalServerError("Something went wrong".into()));
+            return Err(AppError::EndOfFile);
         }
 
-        Ok(Body::from(buffer[..bytes_read].to_vec()))
+        let body = Body::from(buffer[..bytes_read].to_vec());
+
+        Ok((body, bytes_read))
     }
 }

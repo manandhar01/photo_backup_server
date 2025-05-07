@@ -8,6 +8,7 @@ pub enum AppError {
     Unauthorized(String),
     NotFound(String),
     InternalServerError(String),
+    EndOfFile,
 }
 
 impl IntoResponse for AppError {
