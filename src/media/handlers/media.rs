@@ -3,7 +3,10 @@ use axum::{
     response::Response,
     Extension, Json,
 };
-use std::sync::Arc;
+use hyper::{HeaderMap, StatusCode};
+use std::{io::SeekFrom, path::PathBuf, sync::Arc};
+use tokio::io::{AsyncReadExt, AsyncSeekExt};
+use tokio_util::io::ReaderStream;
 
 use crate::app::AppState;
 use crate::media::{
@@ -55,6 +58,77 @@ pub async fn download_chunk(
         )
         .body(body)
         .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+
+    Ok(response)
+}
+
+pub async fn stream_media(
+    State(state): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Path(id): Path<i32>,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let media = MediaService::check_media_access(&state.db, id, user.id)
+        .await
+        .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+
+    let metadata = MediaMetadataService::get_metadata_for_media(&state.db, media.id)
+        .await
+        .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+
+    let path = PathBuf::from(media.filepath);
+
+    if !path.exists() {
+        return Err(AppError::NotFound("File not found".into()));
+    }
+
+    let file_size = match metadata.size {
+        Some(size) => size as u64,
+        None => 0,
+    };
+
+    let range_header = headers.get("range").and_then(|h| h.to_str().ok());
+
+    let (start, end) = if let Some(range) = range_header {
+        // Example: bytes=1000-
+        if let Some(range) = range.strip_prefix("bytes=") {
+            let parts: Vec<_> = range.split('-').collect();
+            let start = parts
+                .first()
+                .and_then(|s| s.parse::<u64>().ok())
+                .unwrap_or(0);
+            let end = parts
+                .get(1)
+                .and_then(|e| e.parse::<u64>().ok())
+                .unwrap_or(file_size - 1);
+            (start, end)
+        } else {
+            (0, file_size - 1)
+        }
+    } else {
+        (0, file_size - 1)
+    };
+    let chunk_size = end - start + 1;
+
+    let mut file = tokio::fs::File::open(&path).await.unwrap();
+    file.seek(SeekFrom::Start(start)).await.unwrap();
+    let stream = ReaderStream::with_capacity(file.take(chunk_size), 8192);
+
+    let mime_type = metadata
+        .mime_type
+        .unwrap_or("application/octet-stream".to_string());
+
+    let response = Response::builder()
+        .status(StatusCode::PARTIAL_CONTENT)
+        .header("Content-Type", mime_type)
+        .header("Content-Length", chunk_size.to_string())
+        .header("Accept-Ranges", "bytes")
+        .header(
+            "Content-Range",
+            format!("bytes {}-{}/{}", start, end, file_size),
+        )
+        .body(axum::body::Body::from_stream(stream))
+        .unwrap();
 
     Ok(response)
 }
