@@ -1,3 +1,4 @@
+use core::net::SocketAddr;
 use dotenvy::dotenv;
 use std::env;
 use tokio::net::TcpListener;
@@ -24,5 +25,10 @@ async fn main() {
 
     let listener = TcpListener::bind(&addr).await.unwrap();
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .unwrap();
 }

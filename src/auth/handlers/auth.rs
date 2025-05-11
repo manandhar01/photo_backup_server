@@ -1,14 +1,20 @@
-use axum::{extract::State, Json};
+use axum::{
+    extract::{ConnectInfo, State},
+    Json,
+};
+use axum_extra::{headers::UserAgent, TypedHeader};
+use core::net::SocketAddr;
 use std::sync::Arc;
 
 use crate::app::AppState;
 use crate::auth::{
     dtos::{
         login::{LoginRequest, LoginResponse},
+        login_activity_dto::LoginActivityDto,
         register::RegisterRequest,
         verify_token_response::VerifyTokenResponse,
     },
-    services::auth::AuthService,
+    services::{auth::AuthService, login_activity::LoginActivityService},
 };
 use crate::errors::app_error::AppError;
 use crate::user::{dtos::user::UserResponse, services::user::UserService};
@@ -34,24 +40,71 @@ pub async fn register(
 
 pub async fn login(
     State(state): State<Arc<AppState>>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    TypedHeader(user_agent): TypedHeader<UserAgent>,
     Json(payload): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, AppError> {
-    let user = UserService::find_user_by_email(&state.db, &payload.email)
-        .await
-        .map_err(|_| AppError::Unauthorized("Invalid credentials".to_string()))?;
+    let mut activity = LoginActivityDto {
+        user_id: None,
+        email: payload.email.clone(),
+        success: false,
+        ip_address: Some(addr.ip().to_string()),
+        user_agent: Some(user_agent.to_string()),
+    };
+
+    let user = match UserService::find_user_by_email(&state.db, &payload.email).await {
+        Ok(user) => user,
+        Err(_) => {
+            match LoginActivityService::create_log(&state.db, activity).await {
+                Ok(_activity) => {}
+                Err(e) => eprintln!("Failed to save login activity: {}", e),
+            };
+
+            return Err(AppError::Unauthorized("Invalid credentials".to_string()))?;
+        }
+    };
 
     match user {
         Some(user) => {
+            activity.user_id = Some(user.id);
+
             if !user.verify_password(&payload.password) {
-                return Err(AppError::Unauthorized("Invalid credentials".to_string()));
+                match LoginActivityService::create_log(&state.db, activity).await {
+                    Ok(_activity) => {}
+                    Err(e) => eprintln!("Failed to save login activity: {}", e),
+                };
+
+                return Err(AppError::Unauthorized("Invalid credentials".into()));
             }
 
-            let token = AuthService::generate_token(user.uuid)
-                .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?;
+            let token = match AuthService::generate_token(user.uuid) {
+                Ok(token) => token,
+                Err(_) => {
+                    match LoginActivityService::create_log(&state.db, activity).await {
+                        Ok(_activity) => {}
+                        Err(e) => eprintln!("Failed to save login activity: {}", e),
+                    };
+
+                    return Err(AppError::InternalServerError("Something went wrong".into()));
+                }
+            };
+
+            activity.success = true;
+            match LoginActivityService::create_log(&state.db, activity).await {
+                Ok(_activity) => {}
+                Err(e) => eprintln!("Failed to save login activity: {}", e),
+            };
 
             Ok(Json(LoginResponse { token }))
         }
-        None => Err(AppError::Unauthorized("Invalid credentials".to_string())),
+        None => {
+            match LoginActivityService::create_log(&state.db, activity).await {
+                Ok(_activity) => {}
+                Err(e) => eprintln!("Failed to save login activity: {}", e),
+            };
+
+            Err(AppError::Unauthorized("Invalid credentials".to_string()))
+        }
     }
 }
 
