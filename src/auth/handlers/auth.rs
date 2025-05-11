@@ -1,8 +1,9 @@
 use axum::{
     extract::{ConnectInfo, State},
-    Json,
+    Extension, Json,
 };
 use axum_extra::{headers::UserAgent, TypedHeader};
+use chrono::{DateTime, TimeZone, Utc};
 use core::net::SocketAddr;
 use std::sync::Arc;
 use tracing::{info, warn};
@@ -12,13 +13,14 @@ use crate::auth::{
     dtos::{
         login::{LoginRequest, LoginResponse},
         login_activity_dto::LoginActivityDto,
+        refresh_token_payload::RefreshTokenPayload,
         register::RegisterRequest,
         verify_token_response::VerifyTokenResponse,
     },
-    services::{auth::AuthService, login_activity::LoginActivityService},
+    services::{login_activity::LoginActivityService, refresh_token::RefreshTokenService},
 };
 use crate::errors::app_error::AppError;
-use crate::user::{dtos::user::UserResponse, services::user::UserService};
+use crate::user::{dtos::user::UserResponse, models::user::User, services::user::UserService};
 use crate::utility::hash::hash_password;
 
 pub async fn register(
@@ -87,15 +89,19 @@ pub async fn login(
                 return Err(AppError::Unauthorized("Invalid credentials".into()));
             }
 
-            let token = match AuthService::generate_token(user.uuid) {
-                Ok(token) => token,
+            let response = match RefreshTokenService::generate_token_pair(
+                &state.db, &user, None, None,
+            )
+            .await
+            {
+                Ok(response) => response,
                 Err(e) => {
                     match LoginActivityService::create_log(&state.db, activity).await {
                         Ok(_activity) => {}
                         Err(e) => eprintln!("Failed to save login activity: {}", e),
                     };
 
-                    warn!("Login failed: email={}, reason={}", &payload.email, e);
+                    warn!("Login failed: email={}, reason={:?}", &payload.email, e);
 
                     return Err(AppError::InternalServerError("Something went wrong".into()));
                 }
@@ -112,7 +118,7 @@ pub async fn login(
                 &user.id, &user.email
             );
 
-            Ok(Json(LoginResponse { token }))
+            Ok(response)
         }
         None => {
             match LoginActivityService::create_log(&state.db, activity).await {
@@ -128,6 +134,61 @@ pub async fn login(
             Err(AppError::Unauthorized("Invalid credentials".into()))
         }
     }
+}
+
+pub async fn refresh_tokens(
+    State(state): State<Arc<AppState>>,
+    Extension(refresh_token_payload): Extension<RefreshTokenPayload>,
+    Extension(user): Extension<User>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    TypedHeader(user_agent): TypedHeader<UserAgent>,
+) -> Result<Json<LoginResponse>, AppError> {
+    let mut activity = LoginActivityDto {
+        user_id: None,
+        email: user.email.clone(),
+        success: false,
+        ip_address: Some(addr.ip().to_string()),
+        user_agent: Some(user_agent.to_string()),
+    };
+
+    let exp = refresh_token_payload.exp as i64;
+
+    let expires_at: Option<DateTime<Utc>> = Utc.timestamp_opt(exp, 0).single();
+
+    let response = match RefreshTokenService::generate_token_pair(
+        &state.db,
+        &user,
+        Some(refresh_token_payload.token),
+        expires_at,
+    )
+    .await
+    {
+        Ok(response) => response,
+        Err(e) => {
+            match LoginActivityService::create_log(&state.db, activity).await {
+                Ok(_activity) => {}
+                Err(e) => eprintln!("Failed to save login activity: {}", e),
+            };
+
+            warn!("Login failed: email={}, reason={:?}", &user.email, e);
+
+            return Err(AppError::InternalServerError("Something went wrong".into()));
+        }
+    };
+
+    activity.user_id = Some(user.id);
+    activity.success = true;
+    match LoginActivityService::create_log(&state.db, activity).await {
+        Ok(_activity) => {}
+        Err(e) => eprintln!("Failed to save login activity: {}", e),
+    };
+
+    info!(
+        "Login successful: user_id={}, email={}",
+        &user.id, &user.email
+    );
+
+    Ok(response)
 }
 
 pub async fn verify() -> Json<VerifyTokenResponse> {

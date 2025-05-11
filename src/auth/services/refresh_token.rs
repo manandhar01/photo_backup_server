@@ -1,0 +1,99 @@
+use axum::Json;
+use chrono::{DateTime, Utc};
+use sqlx::PgPool;
+
+use crate::{
+    auth::{dtos::login::LoginResponse, models::refresh_token::RefreshToken},
+    errors::app_error::AppError,
+    user::models::user::User,
+};
+
+use super::auth::AuthService;
+
+pub struct RefreshTokenService {}
+
+impl RefreshTokenService {
+    pub async fn generate_token_pair(
+        pool: &PgPool,
+        user: &User,
+        current_refresh_token: Option<String>,
+        current_refresh_token_expires_at: Option<DateTime<Utc>>,
+    ) -> Result<Json<LoginResponse>, AppError> {
+        let access_token = AuthService::generate_access_token(user.id)
+            .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+
+        let refresh_token = Self::generate_refresh_token(
+            pool,
+            user,
+            current_refresh_token,
+            current_refresh_token_expires_at,
+        )
+        .await?;
+
+        Ok(Json(LoginResponse {
+            access_token,
+            refresh_token,
+        }))
+    }
+
+    async fn generate_refresh_token(
+        pool: &PgPool,
+        user: &User,
+        current_refresh_token: Option<String>,
+        current_refresh_token_expires_at: Option<DateTime<Utc>>,
+    ) -> Result<String, AppError> {
+        let new_refresh_token = AuthService::generate_refresh_token(user.id)
+            .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+
+        if let (Some(token), Some(expires_at)) =
+            (current_refresh_token, current_refresh_token_expires_at)
+        {
+            if Self::is_refresh_token_black_listed(pool, &token, user.id)
+                .await
+                .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?
+            {
+                return Err(AppError::Unauthorized("Invalid credentials".into()));
+            }
+
+            let _blacklisted = Self::black_list_refresh_token(pool, user.id, &token, expires_at)
+                .await
+                .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+        }
+
+        Ok(new_refresh_token)
+    }
+
+    async fn is_refresh_token_black_listed(
+        pool: &PgPool,
+        token: &str,
+        user_id: i32,
+    ) -> Result<bool, sqlx::Error> {
+        let record = sqlx::query_as!(
+            RefreshToken,
+            r#"select * from refresh_tokens where deleted_at is null and user_id = $1 and refresh_token = $2"#,
+            user_id,
+            token
+        ).fetch_optional(pool).await?;
+
+        Ok(record.is_some())
+    }
+
+    async fn black_list_refresh_token(
+        pool: &PgPool,
+        user_id: i32,
+        token: &str,
+        expires_at: DateTime<Utc>,
+    ) -> Result<RefreshToken, sqlx::Error> {
+        let record = sqlx::query_as!(
+            RefreshToken,
+            r#"insert into refresh_tokens (user_id, refresh_token, expires_at) values ($1, $2, $3) returning *"#,
+            user_id,
+            token,
+            expires_at
+            )
+            .fetch_one(pool)
+            .await?;
+
+        Ok(record)
+    }
+}

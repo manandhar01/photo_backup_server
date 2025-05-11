@@ -8,5 +8,6 @@ pub struct LoginRequest {
 
 #[derive(Serialize)]
 pub struct LoginResponse {
-    pub token: String,
+    pub access_token: String,
+    pub refresh_token: String,
 }

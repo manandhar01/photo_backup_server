@@ -1,27 +1,51 @@
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
-use uuid::Uuid;
 
 use crate::auth::dtos::claims::Claims;
-use crate::config::{get_jwt_expiry, get_jwt_secret};
+use crate::config::{get_access_token_expiry, get_jwt_secret, get_refresh_token_expiry};
 use crate::user::models::user::User;
 
 tokio::task_local! {
     pub static CURRENT_USER: User;
 }
 
-pub struct AuthService;
+pub struct AuthService {}
 
 impl AuthService {
-    pub fn generate_token(uuid: Uuid) -> Result<String, jsonwebtoken::errors::Error> {
+    pub fn generate_access_token(id: i32) -> Result<String, jsonwebtoken::errors::Error> {
+        let validity = get_access_token_expiry();
+
         let expiration = Utc::now()
-            .checked_add_signed(Duration::seconds(get_jwt_expiry()))
+            .checked_add_signed(Duration::seconds(validity))
             .expect("valid timestamp")
             .timestamp() as usize;
 
         let claims = Claims {
-            sub: uuid,
+            sub: id,
             exp: expiration,
+            refresh: false,
+        };
+
+        let secret = get_jwt_secret();
+        encode(
+            &Header::default(),
+            &claims,
+            &EncodingKey::from_secret(secret.as_bytes()),
+        )
+    }
+
+    pub fn generate_refresh_token(id: i32) -> Result<String, jsonwebtoken::errors::Error> {
+        let validity = get_refresh_token_expiry();
+
+        let expiration = Utc::now()
+            .checked_add_signed(Duration::seconds(validity))
+            .expect("valid timestamp")
+            .timestamp() as usize;
+
+        let claims = Claims {
+            sub: id,
+            exp: expiration,
+            refresh: true,
         };
 
         let secret = get_jwt_secret();

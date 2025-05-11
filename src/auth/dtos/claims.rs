@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
-    pub sub: Uuid,
+    pub sub: i32,
     pub exp: usize,
+    pub refresh: bool,
 }
