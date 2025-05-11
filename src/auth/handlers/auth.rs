@@ -5,6 +5,7 @@ use axum::{
 use axum_extra::{headers::UserAgent, TypedHeader};
 use core::net::SocketAddr;
 use std::sync::Arc;
+use tracing::{info, warn};
 
 use crate::app::AppState;
 use crate::auth::{
@@ -33,7 +34,7 @@ pub async fn register(
         &hashed_password,
     )
     .await
-    .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?;
+    .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
 
     Ok(Json(user.into()))
 }
@@ -54,13 +55,15 @@ pub async fn login(
 
     let user = match UserService::find_user_by_email(&state.db, &payload.email).await {
         Ok(user) => user,
-        Err(_) => {
+        Err(e) => {
             match LoginActivityService::create_log(&state.db, activity).await {
                 Ok(_activity) => {}
                 Err(e) => eprintln!("Failed to save login activity: {}", e),
             };
 
-            return Err(AppError::Unauthorized("Invalid credentials".to_string()))?;
+            warn!("Login failed: email={}, reason={}", &payload.email, e);
+
+            return Err(AppError::Unauthorized("Invalid credentials".into()))?;
         }
     };
 
@@ -74,16 +77,25 @@ pub async fn login(
                     Err(e) => eprintln!("Failed to save login activity: {}", e),
                 };
 
+                println!("here");
+
+                warn!(
+                    "Login failed: email={}, reason={}",
+                    &payload.email, "wrong password"
+                );
+
                 return Err(AppError::Unauthorized("Invalid credentials".into()));
             }
 
             let token = match AuthService::generate_token(user.uuid) {
                 Ok(token) => token,
-                Err(_) => {
+                Err(e) => {
                     match LoginActivityService::create_log(&state.db, activity).await {
                         Ok(_activity) => {}
                         Err(e) => eprintln!("Failed to save login activity: {}", e),
                     };
+
+                    warn!("Login failed: email={}, reason={}", &payload.email, e);
 
                     return Err(AppError::InternalServerError("Something went wrong".into()));
                 }
@@ -95,6 +107,11 @@ pub async fn login(
                 Err(e) => eprintln!("Failed to save login activity: {}", e),
             };
 
+            info!(
+                "Login successful: user_id={}, email={}",
+                &user.id, &user.email
+            );
+
             Ok(Json(LoginResponse { token }))
         }
         None => {
@@ -103,7 +120,12 @@ pub async fn login(
                 Err(e) => eprintln!("Failed to save login activity: {}", e),
             };
 
-            Err(AppError::Unauthorized("Invalid credentials".to_string()))
+            warn!(
+                "Login failed: email={}, reason={}",
+                &payload.email, "user not found"
+            );
+
+            Err(AppError::Unauthorized("Invalid credentials".into()))
         }
     }
 }

@@ -2,6 +2,7 @@ use core::net::SocketAddr;
 use dotenvy::dotenv;
 use std::env;
 use tokio::net::TcpListener;
+use tracing_subscriber::EnvFilter;
 
 mod app;
 mod auth;
@@ -17,6 +18,10 @@ use crate::app::create_app;
 #[tokio::main]
 async fn main() {
     dotenv().ok();
+
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::new("info"))
+        .init();
 
     let app = create_app().await;
 
