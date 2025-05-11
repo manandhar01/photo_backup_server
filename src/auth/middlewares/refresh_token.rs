@@ -5,12 +5,12 @@ use axum::{
 };
 use std::sync::Arc;
 
-use crate::app::AppState;
 use crate::auth::services::auth::AuthService;
 use crate::errors::app_error::AppError;
 use crate::user::services::user::UserService;
+use crate::{app::AppState, auth::dtos::refresh_token_payload::RefreshTokenPayload};
 
-pub async fn auth_middleware(
+pub async fn refresh_token_middleware(
     State(state): State<Arc<AppState>>,
     mut req: Request,
     next: Next,
@@ -22,17 +22,23 @@ pub async fn auth_middleware(
         .and_then(|h| h.strip_prefix("Bearer "))
     {
         if let Ok(claims) = AuthService::validate_token(token) {
-            if claims.refresh {
+            if !claims.refresh {
                 return AppError::Unauthorized("Invalid credentials".into()).into_response();
             }
 
             if let Ok(Some(user)) = UserService::find_user_by_id(&state.db, claims.sub).await {
+                let refresh_token_payload = RefreshTokenPayload {
+                    exp: claims.exp,
+                    token: token.to_string(),
+                };
+
                 req.extensions_mut().insert(user.clone());
+                req.extensions_mut().insert(refresh_token_payload);
 
                 return AuthService::login(user, async { next.run(req).await }).await;
             }
         }
     }
 
-    AppError::Unauthorized("Invalid credentials".into()).into_response()
+    AppError::Unauthorized("Invalid credentials".to_string()).into_response()
 }
