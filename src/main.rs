@@ -1,6 +1,8 @@
+use core::net::SocketAddr;
 use dotenvy::dotenv;
 use std::env;
 use tokio::net::TcpListener;
+use tracing_subscriber::EnvFilter;
 
 mod app;
 mod auth;
@@ -17,6 +19,10 @@ use crate::app::create_app;
 async fn main() {
     dotenv().ok();
 
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::new("info"))
+        .init();
+
     let app = create_app().await;
 
     let port = env::var("PORT").unwrap_or_else(|_| "3000".to_string());
@@ -24,5 +30,10 @@ async fn main() {
 
     let listener = TcpListener::bind(&addr).await.unwrap();
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .unwrap();
 }
