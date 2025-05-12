@@ -5,6 +5,7 @@ use axum::{
 };
 use hyper::HeaderMap;
 use std::sync::Arc;
+use tokio::fs;
 
 use crate::app::AppState;
 use crate::errors::app_error::AppError;
@@ -13,6 +14,8 @@ use crate::media::{
         media_detail_response::MediaDetailResponse, media_download_payload::MediaDownloadPayload,
         media_list_payload::MediaListPayload, media_list_response::MediaListResponse,
     },
+    enums::media_type::MediaType,
+    services::photo::PhotoService,
     services::{
         download::DownloadService,
         media::MediaService,
@@ -56,6 +59,34 @@ pub async fn download_chunk(
         .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
 
     Ok(response)
+}
+
+pub async fn get_thumbnail(
+    State(state): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Path(id): Path<i32>,
+) -> Result<Response, AppError> {
+    let media = MediaService::check_media_access(&state.db, id, user.id)
+        .await
+        .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+
+    if media.media_type != MediaType::Photo {
+        return Err(AppError::NotFound("Thumbnail not found".into()));
+    }
+
+    let mut thumbnail_path = format!("./uploads/{}/thumbnails/{}", user.uuid, media.filename);
+
+    if !fs::try_exists(thumbnail_path.clone())
+        .await
+        .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?
+    {
+        thumbnail_path =
+            PhotoService::generate_photo_thumbnail(&media.filepath, &media.filename, 400, &user)
+                .await
+                .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+    }
+
+    DownloadService::download_thumbnail(&thumbnail_path).await
 }
 
 pub async fn stream_media(

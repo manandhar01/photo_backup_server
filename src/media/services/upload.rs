@@ -90,7 +90,6 @@ impl UploadService {
             let final_path =
                 Self::assemble_file(user, &file_name, &original_file_name, total_chunks).await?;
 
-            // Get MIME type
             let mime_type = infer::get_from_path(&final_path)
                 .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?
                 .map(|t| t.mime_type().to_string())
@@ -98,17 +97,19 @@ impl UploadService {
 
             let media_type = MediaType::from_mime(&mime_type) as i32;
 
-            // Create media record
             let media = MediaService::create_media(db, user, &file_name, &final_path, media_type)
                 .await
                 .map_err(|e| AppError::InternalServerError(format!("DB error: {}", e)))?;
 
-            // Extract and save metadata
             let metadata = Self::extract_metadata(&final_path, &original_file_name).await?;
             let _media_metadata =
                 MediaMetadataService::create_metadata(db, &media, &metadata).await;
-            //
-            // Ok(media)
+
+            if mime_type.starts_with("image/") {
+                let _thumbnail =
+                    PhotoService::generate_photo_thumbnail(&final_path, &file_name, 400, user)
+                        .await;
+            }
         }
 
         Ok(Json(UploadResponse {

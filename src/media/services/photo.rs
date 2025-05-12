@@ -1,9 +1,14 @@
 use chrono::{DateTime, NaiveDateTime};
 use exif::{Reader, Tag};
+use image::imageops::FilterType;
 use imageinfo::ImageInfo;
-use std::{fs::File, io::Seek, str::FromStr};
+use std::{
+    fs::{self, File},
+    io::Seek,
+    str::FromStr,
+};
 
-use crate::media::models::media_metadata::MediaMetadata;
+use crate::{media::models::media_metadata::MediaMetadata, user::models::user::User};
 
 pub struct PhotoService {}
 
@@ -82,6 +87,26 @@ impl PhotoService {
                 eprintln!("{:?}", e);
             }
         }
+    }
+
+    pub async fn generate_photo_thumbnail(
+        filepath: &str,
+        filename: &str,
+        max_width: u32,
+        user: &User,
+    ) -> Result<String, Box<dyn std::error::Error>> {
+        let img = image::open(filepath)?;
+
+        let thumbnail = img.resize(max_width, max_width, FilterType::Lanczos3);
+
+        let output_path = format!("./uploads/{}/thumbnails", user.uuid);
+        fs::create_dir_all(&output_path)?;
+
+        let thumbnail_path = format!("{}/{}", output_path, filename);
+
+        thumbnail.save(&thumbnail_path)?;
+
+        Ok(thumbnail_path)
     }
 
     fn parse_exif_datetime(dt_str: &str) -> Option<NaiveDateTime> {

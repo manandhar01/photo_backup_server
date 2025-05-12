@@ -104,4 +104,19 @@ impl DownloadService {
 
         Ok(response)
     }
+
+    pub async fn download_thumbnail(file_path: &str) -> Result<Response, AppError> {
+        let file = tokio::fs::File::open(&file_path)
+            .await
+            .map_err(|_| AppError::NotFound("File not found".into()))?;
+        let stream = tokio_util::io::ReaderStream::new(file);
+
+        let response = Response::builder()
+            .status(StatusCode::OK)
+            .header("Content-Type", "image/jpeg")
+            .body(axum::body::Body::from_stream(stream))
+            .map_err(|_| AppError::InternalServerError("Failed to build response".into()))?;
+
+        Ok(response)
+    }
 }
