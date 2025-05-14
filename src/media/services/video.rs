@@ -1,6 +1,14 @@
-use ffprobe::ffprobe;
+use std::{
+    fs,
+    path::Path,
+    process::{Command, Stdio},
+};
 
-use crate::media::models::media_metadata::MediaMetadata;
+// use ffmpeg_next as ffmpeg;
+use ffprobe::ffprobe;
+// use image::{ImageBuffer, RgbImage};
+
+use crate::{media::models::media_metadata::MediaMetadata, user::models::user::User};
 
 pub struct VideoService {}
 
@@ -45,6 +53,51 @@ impl VideoService {
                 eprintln!("Could not analyze file with ffprobe: {:?}", e);
             }
         }
+    }
+
+    pub async fn generate_video_thumbnail(
+        filepath: &str,
+        filename: &str,
+        max_width: u32,
+        user: &User,
+    ) -> Result<String, Box<dyn std::error::Error>> {
+        let output_path = format!("./uploads/{}/thumbnails", user.uuid);
+        fs::create_dir_all(&output_path)?;
+
+        let stem = Path::new(filename)
+            .file_stem() // gets the filename without extension
+            .and_then(|s| s.to_str())
+            .ok_or("Invalid filename")?;
+
+        let thumbnail_path = format!("{}/{}.webp", output_path, stem);
+
+        let status = Command::new("ffmpeg")
+            .args([
+                "-y",
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-ss",
+                "00:00:01",
+                "-t",
+                "3",
+                "-i",
+                filepath,
+                "-vf",
+                &format!("fps=10, scale={}:-1:flags=lanczos", max_width),
+                "-loop",
+                "0",
+                &thumbnail_path,
+            ])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()?;
+
+        if !status.success() {
+            return Err("Failed to generate WebP thumbnail".into());
+        }
+
+        Ok(thumbnail_path)
     }
 
     fn parse_ffmpeg_rational(rate: &str) -> Option<f32> {
