@@ -85,7 +85,7 @@ pub async fn get_thumbnail(
             .ok_or("Invalid filename")
             .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
 
-        thumbnail_path = format!("./uploads/{}/thumbnails/{}.jpg", user.uuid, stem);
+        thumbnail_path = format!("./uploads/{}/thumbnails/{}.webp", user.uuid, stem);
     }
 
     if !fs::try_exists(thumbnail_path.clone())
