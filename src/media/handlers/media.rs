@@ -7,7 +7,6 @@ use hyper::HeaderMap;
 use std::sync::Arc;
 use tokio::fs;
 
-use crate::app::AppState;
 use crate::errors::app_error::AppError;
 use crate::media::{
     dtos::{
@@ -24,6 +23,7 @@ use crate::media::{
     },
 };
 use crate::user::models::user::User;
+use crate::{app::AppState, media::services::video::VideoService};
 
 pub async fn upload_chunk(
     State(state): State<Arc<AppState>>,
@@ -70,20 +70,47 @@ pub async fn get_thumbnail(
         .await
         .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
 
-    if media.media_type != MediaType::Photo {
+    if media.media_type != MediaType::Photo && media.media_type != MediaType::Video {
         return Err(AppError::NotFound("Thumbnail not found".into()));
     }
 
-    let mut thumbnail_path = format!("./uploads/{}/thumbnails/{}", user.uuid, media.filename);
+    let mut thumbnail_path = String::new();
+
+    if media.media_type == MediaType::Photo {
+        thumbnail_path = format!("./uploads/{}/thumbnails/{}", user.uuid, media.filename);
+    } else if media.media_type == MediaType::Video {
+        let stem = std::path::Path::new(&media.filename)
+            .file_stem() // gets the filename without extension
+            .and_then(|s| s.to_str())
+            .ok_or("Invalid filename")
+            .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+
+        thumbnail_path = format!("./uploads/{}/thumbnails/{}.jpg", user.uuid, stem);
+    }
 
     if !fs::try_exists(thumbnail_path.clone())
         .await
         .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?
     {
-        thumbnail_path =
-            PhotoService::generate_photo_thumbnail(&media.filepath, &media.filename, 400, &user)
-                .await
-                .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+        if media.media_type == MediaType::Photo {
+            thumbnail_path = PhotoService::generate_photo_thumbnail(
+                &media.filepath,
+                &media.filename,
+                400,
+                &user,
+            )
+            .await
+            .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+        } else if media.media_type == MediaType::Video {
+            thumbnail_path = VideoService::generate_video_thumbnail(
+                &media.filepath,
+                &media.filename,
+                400,
+                &user,
+            )
+            .await
+            .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
+        }
     }
 
     DownloadService::download_thumbnail(&thumbnail_path).await

@@ -109,6 +109,9 @@ impl UploadService {
                 let _thumbnail =
                     PhotoService::generate_photo_thumbnail(&final_path, &file_name, 400, user)
                         .await;
+            } else if mime_type.starts_with("video/") {
+                let _thumbnail =
+                    VideoService::generate_video_thumbnail(&final_path, &file_name, 400, user);
             }
         }
 
