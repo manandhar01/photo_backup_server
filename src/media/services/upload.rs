@@ -14,9 +14,9 @@ use crate::media::{
         photo::PhotoService, video::VideoService,
     },
 };
-use crate::user::{models::user::User, services::user::UserService};
+use crate::user::{models::user_model::UserModel, services::user::UserService};
 
-pub struct UploadService;
+pub struct UploadService {}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UploadResponse {
@@ -29,7 +29,7 @@ pub struct UploadResponse {
 impl UploadService {
     pub async fn upload_chunk(
         db: &sqlx::PgPool,
-        user: &User,
+        user: &UserModel,
         mut multipart: Multipart,
     ) -> Result<Json<UploadResponse>, AppError> {
         let mut file_name = String::new();
@@ -131,7 +131,7 @@ impl UploadService {
     }
 
     async fn assemble_file(
-        user: &User,
+        user: &UserModel,
         file_name: &str,
         original_file_name: &str,
         total_chunks: usize,

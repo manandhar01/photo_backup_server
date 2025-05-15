@@ -5,7 +5,9 @@ use std::{
     process::{Command, Stdio},
 };
 
-use crate::{media::models::media_metadata_model::MediaMetadataModel, user::models::user::User};
+use crate::{
+    media::models::media_metadata_model::MediaMetadataModel, user::models::user_model::UserModel,
+};
 
 pub struct VideoService {}
 
@@ -56,7 +58,7 @@ impl VideoService {
         filepath: &str,
         filename: &str,
         max_width: u32,
-        user: &User,
+        user: &UserModel,
     ) -> Result<String, Box<dyn std::error::Error>> {
         let output_path = format!("./uploads/{}/thumbnails", user.uuid);
         fs::create_dir_all(&output_path)?;

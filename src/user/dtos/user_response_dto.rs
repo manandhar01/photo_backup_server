@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::user::models::user::User;
+use crate::user::models::user_model::UserModel;
 
 #[derive(Debug, Serialize)]
 pub struct UserResponseDto {
@@ -17,8 +17,8 @@ pub struct UserResponseDto {
     pub updated_by: Option<i32>,
 }
 
-impl From<User> for UserResponseDto {
-    fn from(user: User) -> Self {
+impl From<UserModel> for UserResponseDto {
+    fn from(user: UserModel) -> Self {
         UserResponseDto {
             id: user.id,
             uuid: user.uuid,

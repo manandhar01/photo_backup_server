@@ -8,14 +8,14 @@ use crate::media::{
     },
     models::media_model::MediaModel,
 };
-use crate::user::models::user::User;
+use crate::user::models::user_model::UserModel;
 
 pub struct MediaService;
 
 impl MediaService {
     pub async fn create_media(
         pool: &sqlx::PgPool,
-        owner: &User,
+        owner: &UserModel,
         filename: &str,
         filepath: &str,
         media_type: i32,

@@ -25,11 +25,11 @@ use crate::media::{
         upload::{UploadResponse, UploadService},
     },
 };
-use crate::user::models::user::User;
+use crate::user::models::user_model::UserModel;
 
 pub async fn upload_chunk(
     State(state): State<Arc<AppState>>,
-    Extension(user): Extension<User>,
+    Extension(user): Extension<UserModel>,
     multipart: Multipart,
 ) -> Result<Json<UploadResponse>, AppError> {
     UploadService::upload_chunk(&state.db, &user, multipart).await
@@ -37,7 +37,7 @@ pub async fn upload_chunk(
 
 pub async fn download_chunk(
     State(state): State<Arc<AppState>>,
-    Extension(user): Extension<User>,
+    Extension(user): Extension<UserModel>,
     Path(id): Path<i32>,
     Json(payload): Json<MediaDownloadPayloadDto>,
 ) -> Result<Response, AppError> {
@@ -65,7 +65,7 @@ pub async fn download_chunk(
 
 pub async fn get_thumbnail(
     State(state): State<Arc<AppState>>,
-    Extension(user): Extension<User>,
+    Extension(user): Extension<UserModel>,
     Path(id): Path<i32>,
 ) -> Result<Response, AppError> {
     let media = MediaService::check_media_access(&state.db, id, user.id)
@@ -120,7 +120,7 @@ pub async fn get_thumbnail(
 
 pub async fn stream_media(
     State(state): State<Arc<AppState>>,
-    Extension(user): Extension<User>,
+    Extension(user): Extension<UserModel>,
     Path(id): Path<i32>,
     headers: HeaderMap,
 ) -> Result<Response, AppError> {

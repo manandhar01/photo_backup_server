@@ -2,22 +2,19 @@ use axum::Json;
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
-use crate::{
-    auth::{
-        dtos::login_response_dto::LoginResponseDto, models::refresh_token_model::RefreshTokenModel,
-    },
-    errors::app_error::AppError,
-    user::models::user::User,
+use crate::auth::{
+    dtos::login_response_dto::LoginResponseDto, models::refresh_token_model::RefreshTokenModel,
+    services::auth::AuthService,
 };
-
-use super::auth::AuthService;
+use crate::errors::app_error::AppError;
+use crate::user::models::user_model::UserModel;
 
 pub struct RefreshTokenService {}
 
 impl RefreshTokenService {
     pub async fn generate_token_pair(
         pool: &PgPool,
-        user: &User,
+        user: &UserModel,
         current_refresh_token: Option<String>,
         current_refresh_token_expires_at: Option<DateTime<Utc>>,
     ) -> Result<Json<LoginResponseDto>, AppError> {
@@ -40,7 +37,7 @@ impl RefreshTokenService {
 
     async fn generate_refresh_token(
         pool: &PgPool,
-        user: &User,
+        user: &UserModel,
         current_refresh_token: Option<String>,
         current_refresh_token_expires_at: Option<DateTime<Utc>>,
     ) -> Result<String, AppError> {

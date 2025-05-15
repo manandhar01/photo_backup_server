@@ -3,10 +3,10 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 
 use crate::auth::dtos::claims_dto::ClaimsDto;
 use crate::config::{get_access_token_expiry, get_jwt_secret, get_refresh_token_expiry};
-use crate::user::models::user::User;
+use crate::user::models::user_model::UserModel;
 
 tokio::task_local! {
-    pub static CURRENT_USER: User;
+    pub static CURRENT_USER: UserModel;
 }
 
 pub struct AuthService {}
@@ -66,7 +66,7 @@ impl AuthService {
         .map(|data| data.claims)
     }
 
-    pub fn user() -> Option<User> {
+    pub fn user() -> Option<UserModel> {
         CURRENT_USER.try_with(|u| u.clone()).ok()
     }
 
@@ -78,7 +78,7 @@ impl AuthService {
         Self::user().map(|u| u.id)
     }
 
-    pub async fn login<R, F>(user: User, fut: F) -> R
+    pub async fn login<R, F>(user: UserModel, fut: F) -> R
     where
         F: std::future::Future<Output = R>,
     {

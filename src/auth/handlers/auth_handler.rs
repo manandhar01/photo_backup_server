@@ -20,7 +20,8 @@ use crate::auth::{
 };
 use crate::errors::app_error::AppError;
 use crate::user::{
-    dtos::user_response_dto::UserResponseDto, models::user::User, services::user::UserService,
+    dtos::user_response_dto::UserResponseDto, models::user_model::UserModel,
+    services::user::UserService,
 };
 use crate::utility::hash::hash_password;
 
@@ -140,7 +141,7 @@ pub async fn login(
 pub async fn refresh_tokens(
     State(state): State<Arc<AppState>>,
     Extension(refresh_token_payload): Extension<RefreshTokenPayloadDto>,
-    Extension(user): Extension<User>,
+    Extension(user): Extension<UserModel>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     TypedHeader(user_agent): TypedHeader<UserAgent>,
 ) -> Result<Json<LoginResponseDto>, AppError> {

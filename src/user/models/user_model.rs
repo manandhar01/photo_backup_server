@@ -5,7 +5,7 @@ use sqlx::FromRow;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
-pub struct User {
+pub struct UserModel {
     pub id: i32,
     pub uuid: Uuid,
 
@@ -20,7 +20,7 @@ pub struct User {
     pub updated_by: Option<i32>,
 }
 
-impl User {
+impl UserModel {
     pub fn verify_password(&self, password: &str) -> bool {
         match &self.password {
             Some(user_password) => verify(password, user_password).unwrap_or(false),
@@ -29,7 +29,7 @@ impl User {
     }
 }
 
-impl Clone for User {
+impl Clone for UserModel {
     fn clone(&self) -> Self {
         Self {
             id: self.id,

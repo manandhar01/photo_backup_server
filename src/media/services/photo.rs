@@ -8,7 +8,9 @@ use std::{
     str::FromStr,
 };
 
-use crate::{media::models::media_metadata_model::MediaMetadataModel, user::models::user::User};
+use crate::{
+    media::models::media_metadata_model::MediaMetadataModel, user::models::user_model::UserModel,
+};
 
 pub struct PhotoService {}
 
@@ -93,7 +95,7 @@ impl PhotoService {
         filepath: &str,
         filename: &str,
         max_width: u32,
-        user: &User,
+        user: &UserModel,
     ) -> Result<String, Box<dyn std::error::Error>> {
         let img = image::open(filepath)?;
 

@@ -6,9 +6,9 @@ use uuid::Uuid;
 
 use crate::auth::services::auth::AuthService;
 use crate::errors::app_error::AppError;
-use crate::user::models::user::User;
+use crate::user::models::user_model::UserModel;
 
-pub struct UserService;
+pub struct UserService {}
 
 impl UserService {
     pub async fn create_user(
@@ -16,12 +16,12 @@ impl UserService {
         email: &str,
         username: &str,
         password: &str,
-    ) -> Result<User, sqlx::Error> {
+    ) -> Result<UserModel, sqlx::Error> {
         let actor_id = AuthService::id();
         let now = Utc::now();
 
         let user = sqlx::query_as!(
-            User,
+            UserModel,
             r#"insert into users (email, username, password, created_at, updated_at, created_by, updated_by) values ($1, $2, $3, $4, $4, $5, $5) returning *"#,
             email,
             username,
@@ -35,9 +35,9 @@ impl UserService {
         Ok(user)
     }
 
-    pub async fn find_user_by_email(pool: &PgPool, email: &str) -> sqlx::Result<Option<User>> {
+    pub async fn find_user_by_email(pool: &PgPool, email: &str) -> sqlx::Result<Option<UserModel>> {
         sqlx::query_as!(
-            User,
+            UserModel,
             r#"select * from users where email ilike $1 and deleted_at is null"#,
             email
         )
@@ -45,9 +45,9 @@ impl UserService {
         .await
     }
 
-    pub async fn find_user_by_uuid(pool: &PgPool, uuid: Uuid) -> sqlx::Result<Option<User>> {
+    pub async fn find_user_by_uuid(pool: &PgPool, uuid: Uuid) -> sqlx::Result<Option<UserModel>> {
         sqlx::query_as!(
-            User,
+            UserModel,
             r#"select * from users where uuid = $1 and deleted_at is null"#,
             uuid
         )
@@ -55,9 +55,9 @@ impl UserService {
         .await
     }
 
-    pub async fn find_user_by_id(pool: &PgPool, user_id: i32) -> sqlx::Result<Option<User>> {
+    pub async fn find_user_by_id(pool: &PgPool, user_id: i32) -> sqlx::Result<Option<UserModel>> {
         sqlx::query_as!(
-            User,
+            UserModel,
             r#"select * from users where id = $1 and deleted_at is null"#,
             user_id
         )
@@ -65,12 +65,12 @@ impl UserService {
         .await
     }
 
-    pub async fn delete_user(pool: &PgPool, user_id: i32) -> sqlx::Result<Option<User>> {
+    pub async fn delete_user(pool: &PgPool, user_id: i32) -> sqlx::Result<Option<UserModel>> {
         let actor_id = AuthService::id();
         let now = Utc::now();
 
         sqlx::query_as!(
-            User,
+            UserModel,
             r#"update users set deleted_at = $1, updated_at = $1, updated_by = $2 where id = $3 returning *"#,
             now,
             actor_id,
@@ -80,7 +80,7 @@ impl UserService {
         .await
     }
 
-    pub async fn create_user_directory(user: &User) -> Result<(), AppError> {
+    pub async fn create_user_directory(user: &UserModel) -> Result<(), AppError> {
         let user_dir = format!("./uploads/{}", user.uuid);
         let path = Path::new(&user_dir);
 
