@@ -3,10 +3,10 @@ use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 
-use crate::auth::routes::auth::auth_routes;
-use crate::media::routes::media::media_routes;
-use crate::test::routes::test::test_routes;
-use crate::user::routes::user::user_routes;
+use crate::auth::routes::auth_route::auth_routes;
+use crate::media::routes::media_route::media_routes;
+use crate::test::routes::test_route::test_routes;
+use crate::user::routes::user_route::user_routes;
 
 #[derive(Debug, Clone)]
 pub struct AppState {
