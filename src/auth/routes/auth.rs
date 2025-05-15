@@ -5,11 +5,11 @@ use axum::{
 };
 use std::sync::Arc;
 
+use crate::app::AppState;
 use crate::auth::{
-    handlers::auth::{login, register, verify},
+    handlers::auth_handler::{login, refresh_tokens, register, verify},
     middlewares::{auth::auth_middleware, refresh_token::refresh_token_middleware},
 };
-use crate::{app::AppState, auth::handlers::auth::refresh_tokens};
 
 pub fn auth_routes(app_state: Arc<AppState>) -> Router {
     let verify_route =
