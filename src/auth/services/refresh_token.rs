@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
 use crate::{
-    auth::{dtos::login::LoginResponse, models::refresh_token::RefreshToken},
+    auth::{dtos::login_response_dto::LoginResponseDto, models::refresh_token::RefreshToken},
     errors::app_error::AppError,
     user::models::user::User,
 };
@@ -18,7 +18,7 @@ impl RefreshTokenService {
         user: &User,
         current_refresh_token: Option<String>,
         current_refresh_token_expires_at: Option<DateTime<Utc>>,
-    ) -> Result<Json<LoginResponse>, AppError> {
+    ) -> Result<Json<LoginResponseDto>, AppError> {
         let access_token = AuthService::generate_access_token(user.id)
             .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
 
@@ -30,7 +30,7 @@ impl RefreshTokenService {
         )
         .await?;
 
-        Ok(Json(LoginResponse {
+        Ok(Json(LoginResponseDto {
             access_token,
             refresh_token,
         }))

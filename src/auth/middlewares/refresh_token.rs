@@ -5,10 +5,12 @@ use axum::{
 };
 use std::sync::Arc;
 
-use crate::auth::services::auth::AuthService;
+use crate::app::AppState;
+use crate::auth::{
+    dtos::refresh_token_payload_dto::RefreshTokenPayloadDto, services::auth::AuthService,
+};
 use crate::errors::app_error::AppError;
 use crate::user::services::user::UserService;
-use crate::{app::AppState, auth::dtos::refresh_token_payload::RefreshTokenPayload};
 
 pub async fn refresh_token_middleware(
     State(state): State<Arc<AppState>>,
@@ -27,7 +29,7 @@ pub async fn refresh_token_middleware(
             }
 
             if let Ok(Some(user)) = UserService::find_user_by_id(&state.db, claims.sub).await {
-                let refresh_token_payload = RefreshTokenPayload {
+                let refresh_token_payload = RefreshTokenPayloadDto {
                     exp: claims.exp,
                     token: token.to_string(),
                 };

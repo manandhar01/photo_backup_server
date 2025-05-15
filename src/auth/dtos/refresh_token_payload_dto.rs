@@ -1,5 +1,5 @@
 #[derive(Clone)]
-pub struct RefreshTokenPayload {
+pub struct RefreshTokenPayloadDto {
     pub exp: usize,
     pub token: String,
 }

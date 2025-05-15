@@ -1,6 +1,6 @@
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub struct VerifyTokenResponse {
+pub struct VerifyTokenResponseDto {
     pub valid: bool,
 }

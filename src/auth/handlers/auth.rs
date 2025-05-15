@@ -11,11 +11,10 @@ use tracing::{info, warn};
 use crate::app::AppState;
 use crate::auth::{
     dtos::{
-        login::{LoginRequest, LoginResponse},
-        login_activity_dto::LoginActivityDto,
-        refresh_token_payload::RefreshTokenPayload,
-        register::RegisterRequest,
-        verify_token_response::VerifyTokenResponse,
+        login_activity_dto::LoginActivityDto, login_request_dto::LoginRequestDto,
+        login_response_dto::LoginResponseDto, refresh_token_payload_dto::RefreshTokenPayloadDto,
+        register_request_dto::RegisterRequestDto,
+        verify_token_response_dto::VerifyTokenResponseDto,
     },
     services::{login_activity::LoginActivityService, refresh_token::RefreshTokenService},
 };
@@ -25,7 +24,7 @@ use crate::utility::hash::hash_password;
 
 pub async fn register(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<RegisterRequest>,
+    Json(payload): Json<RegisterRequestDto>,
 ) -> Result<Json<UserResponse>, AppError> {
     let hashed_password = hash_password(&payload.password)?;
 
@@ -45,8 +44,8 @@ pub async fn login(
     State(state): State<Arc<AppState>>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     TypedHeader(user_agent): TypedHeader<UserAgent>,
-    Json(payload): Json<LoginRequest>,
-) -> Result<Json<LoginResponse>, AppError> {
+    Json(payload): Json<LoginRequestDto>,
+) -> Result<Json<LoginResponseDto>, AppError> {
     let mut activity = LoginActivityDto {
         user_id: None,
         email: payload.email.clone(),
@@ -138,11 +137,11 @@ pub async fn login(
 
 pub async fn refresh_tokens(
     State(state): State<Arc<AppState>>,
-    Extension(refresh_token_payload): Extension<RefreshTokenPayload>,
+    Extension(refresh_token_payload): Extension<RefreshTokenPayloadDto>,
     Extension(user): Extension<User>,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     TypedHeader(user_agent): TypedHeader<UserAgent>,
-) -> Result<Json<LoginResponse>, AppError> {
+) -> Result<Json<LoginResponseDto>, AppError> {
     let mut activity = LoginActivityDto {
         user_id: None,
         email: user.email.clone(),
@@ -191,6 +190,6 @@ pub async fn refresh_tokens(
     Ok(response)
 }
 
-pub async fn verify() -> Json<VerifyTokenResponse> {
-    Json(VerifyTokenResponse { valid: true })
+pub async fn verify() -> Json<VerifyTokenResponseDto> {
+    Json(VerifyTokenResponseDto { valid: true })
 }

@@ -7,7 +7,9 @@ use hyper::HeaderMap;
 use std::sync::Arc;
 use tokio::fs;
 
+use crate::app::AppState;
 use crate::errors::app_error::AppError;
+use crate::media::services::video::VideoService;
 use crate::media::{
     dtos::{
         media_detail_response::MediaDetailResponse, media_download_payload::MediaDownloadPayload,
@@ -23,7 +25,6 @@ use crate::media::{
     },
 };
 use crate::user::models::user::User;
-use crate::{app::AppState, media::services::video::VideoService};
 
 pub async fn upload_chunk(
     State(state): State<Arc<AppState>>,

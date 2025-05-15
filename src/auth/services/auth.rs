@@ -1,7 +1,7 @@
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 
-use crate::auth::dtos::claims::Claims;
+use crate::auth::dtos::claims_dto::ClaimsDto;
 use crate::config::{get_access_token_expiry, get_jwt_secret, get_refresh_token_expiry};
 use crate::user::models::user::User;
 
@@ -20,7 +20,7 @@ impl AuthService {
             .expect("valid timestamp")
             .timestamp() as usize;
 
-        let claims = Claims {
+        let claims = ClaimsDto {
             sub: id,
             exp: expiration,
             refresh: false,
@@ -42,7 +42,7 @@ impl AuthService {
             .expect("valid timestamp")
             .timestamp() as usize;
 
-        let claims = Claims {
+        let claims = ClaimsDto {
             sub: id,
             exp: expiration,
             refresh: true,
@@ -56,9 +56,9 @@ impl AuthService {
         )
     }
 
-    pub fn validate_token(token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
+    pub fn validate_token(token: &str) -> Result<ClaimsDto, jsonwebtoken::errors::Error> {
         let secret = get_jwt_secret();
-        decode::<Claims>(
+        decode::<ClaimsDto>(
             token,
             &DecodingKey::from_secret(secret.as_bytes()),
             &Validation::default(),
