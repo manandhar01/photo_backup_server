@@ -1,10 +1,9 @@
+use rand::{distr::Alphanumeric, Rng};
+use sha2::{Digest, Sha256};
 use std::{
     fs::File,
     io::{BufReader, Read},
 };
-
-use rand::{distr::Alphanumeric, Rng};
-use sha2::{Digest, Sha256};
 
 use crate::errors::app_error::AppError;
 

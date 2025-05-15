@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
 use crate::auth::{
-    dtos::login_response_dto::LoginResponseDto, models::refresh_token_model::RefreshTokenModel,
+    dtos::LoginResponseDto, models::refresh_token_model::RefreshTokenModel,
     services::auth_service::AuthService,
 };
 use crate::errors::app_error::AppError;

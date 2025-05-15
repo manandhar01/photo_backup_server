@@ -1,7 +1,7 @@
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 
-use crate::auth::dtos::claims_dto::ClaimsDto;
+use crate::auth::dtos::ClaimsDto;
 use crate::config::{get_access_token_expiry, get_jwt_secret, get_refresh_token_expiry};
 use crate::user::models::user_model::UserModel;
 

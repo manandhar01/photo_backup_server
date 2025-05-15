@@ -10,7 +10,7 @@ use crate::media::{
 };
 use crate::user::models::user_model::UserModel;
 
-pub struct MediaService;
+pub struct MediaService {}
 
 impl MediaService {
     pub async fn create_media(
