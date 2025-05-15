@@ -1,6 +1,6 @@
 use chrono::Utc;
 
-use crate::auth::services::auth::AuthService;
+use crate::auth::services::auth_service::AuthService;
 use crate::media::{
     dtos::{
         media_list_payload_dto::MediaListPayloadDto, media_list_response_dto::MediaListResponseDto,

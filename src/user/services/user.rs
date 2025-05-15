@@ -4,7 +4,7 @@ use std::fs::create_dir_all;
 use std::path::Path;
 use uuid::Uuid;
 
-use crate::auth::services::auth::AuthService;
+use crate::auth::services::auth_service::AuthService;
 use crate::errors::app_error::AppError;
 use crate::user::models::user_model::UserModel;
 

@@ -1,3 +1,3 @@
-pub mod auth;
-pub mod login_activity;
-pub mod refresh_token;
+pub mod auth_service;
+pub mod login_activity_service;
+pub mod refresh_token_service;

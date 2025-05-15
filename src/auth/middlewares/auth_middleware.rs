@@ -6,7 +6,7 @@ use axum::{
 use std::sync::Arc;
 
 use crate::app::AppState;
-use crate::auth::services::auth::AuthService;
+use crate::auth::services::auth_service::AuthService;
 use crate::errors::app_error::AppError;
 use crate::user::services::user::UserService;
 
