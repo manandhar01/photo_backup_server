@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
-pub struct LoginActivity {
+pub struct LoginActivityModel {
     pub id: i32,
     pub user_id: Option<i32>,
     pub email: String,

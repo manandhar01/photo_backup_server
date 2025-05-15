@@ -1,2 +1,2 @@
-pub mod login_activity;
-pub mod refresh_token;
+pub mod login_activity_model;
+pub mod refresh_token_model;

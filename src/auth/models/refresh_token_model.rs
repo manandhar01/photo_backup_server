@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
-pub struct RefreshToken {
+pub struct RefreshTokenModel {
     pub id: i32,
     pub user_id: i32,
     pub refresh_token: String,

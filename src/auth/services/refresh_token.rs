@@ -3,7 +3,9 @@ use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
 use crate::{
-    auth::{dtos::login_response_dto::LoginResponseDto, models::refresh_token::RefreshToken},
+    auth::{
+        dtos::login_response_dto::LoginResponseDto, models::refresh_token_model::RefreshTokenModel,
+    },
     errors::app_error::AppError,
     user::models::user::User,
 };
@@ -69,7 +71,7 @@ impl RefreshTokenService {
         user_id: i32,
     ) -> Result<bool, sqlx::Error> {
         let record = sqlx::query_as!(
-            RefreshToken,
+            RefreshTokenModel,
             r#"select * from refresh_tokens where deleted_at is null and user_id = $1 and refresh_token = $2"#,
             user_id,
             token
@@ -83,9 +85,9 @@ impl RefreshTokenService {
         user_id: i32,
         token: &str,
         expires_at: DateTime<Utc>,
-    ) -> Result<RefreshToken, sqlx::Error> {
+    ) -> Result<RefreshTokenModel, sqlx::Error> {
         let record = sqlx::query_as!(
-            RefreshToken,
+            RefreshTokenModel,
             r#"insert into refresh_tokens (user_id, refresh_token, expires_at) values ($1, $2, $3) returning *"#,
             user_id,
             token,
