@@ -4,7 +4,7 @@ use sqlx::FromRow;
 use uuid::Uuid;
 
 #[derive(Debug, Default, Serialize, Deserialize, FromRow)]
-pub struct MediaMetadata {
+pub struct MediaMetadataModel {
     pub id: i32,
     pub uuid: Uuid,
 

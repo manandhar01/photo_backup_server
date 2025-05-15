@@ -1,2 +1,2 @@
-pub mod media;
-pub mod media_metadata;
+pub mod media_model;
+pub mod media_metadata_model;

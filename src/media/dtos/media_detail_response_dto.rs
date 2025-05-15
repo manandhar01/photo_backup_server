@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::media::{
     enums::media_type_enum::MediaTypeEnum,
-    models::{media::Media, media_metadata::MediaMetadata},
+    models::{media_metadata_model::MediaMetadataModel, media_model::MediaModel},
 };
 
 #[derive(Serialize)]
@@ -20,11 +20,11 @@ pub struct MediaDetailResponseDto {
     pub deleted_at: Option<DateTime<Utc>>,
     pub created_by: Option<i32>,
     pub updated_by: Option<i32>,
-    pub metadata: Option<MediaMetadata>,
+    pub metadata: Option<MediaMetadataModel>,
 }
 
-impl From<(Media, MediaMetadata)> for MediaDetailResponseDto {
-    fn from((media, metadata): (Media, MediaMetadata)) -> Self {
+impl From<(MediaModel, MediaMetadataModel)> for MediaDetailResponseDto {
+    fn from((media, metadata): (MediaModel, MediaMetadataModel)) -> Self {
         Self {
             id: media.id,
             uuid: media.uuid,

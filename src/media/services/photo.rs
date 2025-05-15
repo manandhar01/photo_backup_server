@@ -8,12 +8,12 @@ use std::{
     str::FromStr,
 };
 
-use crate::{media::models::media_metadata::MediaMetadata, user::models::user::User};
+use crate::{media::models::media_metadata_model::MediaMetadataModel, user::models::user::User};
 
 pub struct PhotoService {}
 
 impl PhotoService {
-    pub fn extract_photo_metadata(path: &str, metadata: &mut MediaMetadata) {
+    pub fn extract_photo_metadata(path: &str, metadata: &mut MediaMetadataModel) {
         let file = match File::open(path) {
             Ok(file) => file,
             Err(e) => return eprintln!("{:?}", e),

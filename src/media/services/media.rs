@@ -6,7 +6,7 @@ use crate::media::{
         media_list_payload_dto::MediaListPayloadDto, media_list_response_dto::MediaListResponseDto,
         pagination_metadat_dto::PaginationMetadataDto,
     },
-    models::media::Media,
+    models::media_model::MediaModel,
 };
 use crate::user::models::user::User;
 
@@ -19,12 +19,12 @@ impl MediaService {
         filename: &str,
         filepath: &str,
         media_type: i32,
-    ) -> Result<Media, sqlx::Error> {
+    ) -> Result<MediaModel, sqlx::Error> {
         let actor_id = AuthService::id();
         let now = Utc::now();
 
         let media = sqlx::query_as!(
-            Media,
+            MediaModel,
             r#"insert into media (user_id, filename, filepath, media_type, created_at, updated_at, created_by, updated_by) values ($1, $2, $3, $4, $5, $5, $6, $6) returning *"#,
             owner.id,
             filename,
@@ -48,7 +48,7 @@ impl MediaService {
         let user_id = AuthService::id();
 
         let media = sqlx::query_as!(
-            Media,
+            MediaModel,
             r#"select * from media where deleted_at is null and user_id = $1 order by id desc limit $2 offset $3"#,
             user_id,
             limit,
@@ -74,9 +74,9 @@ impl MediaService {
         Ok(response)
     }
 
-    pub async fn media_detail(pool: &sqlx::PgPool, id: i32) -> Result<Media, sqlx::Error> {
+    pub async fn media_detail(pool: &sqlx::PgPool, id: i32) -> Result<MediaModel, sqlx::Error> {
         let media = sqlx::query_as!(
-            Media,
+            MediaModel,
             r#"select * from media where deleted_at is null and id = $1"#,
             id
         )
@@ -90,9 +90,9 @@ impl MediaService {
         pool: &sqlx::PgPool,
         id: i32,
         user_id: i32,
-    ) -> Result<Media, sqlx::Error> {
+    ) -> Result<MediaModel, sqlx::Error> {
         let media = sqlx::query_as!(
-            Media,
+            MediaModel,
             r#"select * from media where deleted_at is null and id = $1 and user_id = $2"#,
             id,
             user_id

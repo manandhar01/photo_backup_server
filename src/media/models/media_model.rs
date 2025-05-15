@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::media::enums::media_type_enum::MediaTypeEnum;
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
-pub struct Media {
+pub struct MediaModel {
     pub id: i32,
     pub uuid: Uuid,
 

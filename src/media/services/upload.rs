@@ -8,7 +8,7 @@ use std::{
 use crate::errors::app_error::AppError;
 use crate::media::{
     enums::media_type_enum::MediaTypeEnum,
-    models::media_metadata::MediaMetadata,
+    models::media_metadata_model::MediaMetadataModel,
     services::{
         file::FileService, media::MediaService, media_metadata::MediaMetadataService,
         photo::PhotoService, video::VideoService,
@@ -168,7 +168,7 @@ impl UploadService {
     async fn extract_metadata(
         filepath: &str,
         original_filename: &str,
-    ) -> Result<MediaMetadata, AppError> {
+    ) -> Result<MediaMetadataModel, AppError> {
         let mime_type = infer::get_from_path(filepath)
             .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?
             .map(|t| t.mime_type().to_string())
@@ -178,7 +178,7 @@ impl UploadService {
             .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?
             .len() as i64;
 
-        let mut metadata = MediaMetadata {
+        let mut metadata = MediaMetadataModel {
             mime_type: Some(mime_type.to_string()),
             size: Some(size),
             original_filename: Some(original_filename.to_string()),

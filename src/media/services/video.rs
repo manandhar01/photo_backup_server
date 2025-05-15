@@ -1,19 +1,16 @@
+use ffprobe::ffprobe;
 use std::{
     fs,
     path::Path,
     process::{Command, Stdio},
 };
 
-// use ffmpeg_next as ffmpeg;
-use ffprobe::ffprobe;
-// use image::{ImageBuffer, RgbImage};
-
-use crate::{media::models::media_metadata::MediaMetadata, user::models::user::User};
+use crate::{media::models::media_metadata_model::MediaMetadataModel, user::models::user::User};
 
 pub struct VideoService {}
 
 impl VideoService {
-    pub fn extract_video_metadata(path: &str, metadata: &mut MediaMetadata) {
+    pub fn extract_video_metadata(path: &str, metadata: &mut MediaMetadataModel) {
         match ffprobe(path) {
             Ok(info) => {
                 if let Some(duration_str) = &info.format.duration {

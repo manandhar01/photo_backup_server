@@ -10,7 +10,7 @@ use tokio_util::io::ReaderStream;
 use crate::errors::app_error::AppError;
 use crate::media::{
     dtos::media_download_payload_dto::MediaDownloadPayloadDto,
-    models::{media::Media, media_metadata::MediaMetadata},
+    models::{media_metadata_model::MediaMetadataModel, media_model::MediaModel},
 };
 
 pub struct DownloadService {}
@@ -44,8 +44,8 @@ impl DownloadService {
     }
 
     pub async fn stream_media(
-        media: Media,
-        metadata: MediaMetadata,
+        media: MediaModel,
+        metadata: MediaMetadataModel,
         headers: HeaderMap,
     ) -> Result<Response, AppError> {
         let path = PathBuf::from(media.filepath);
