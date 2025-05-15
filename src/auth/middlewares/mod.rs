@@ -1,2 +1,2 @@
-pub mod auth;
-pub mod refresh_token;
+pub mod auth_middleware;
+pub mod refresh_token_middleware;

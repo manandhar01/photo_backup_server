@@ -8,7 +8,9 @@ use std::sync::Arc;
 use crate::app::AppState;
 use crate::auth::{
     handlers::auth_handler::{login, refresh_tokens, register, verify},
-    middlewares::{auth::auth_middleware, refresh_token::refresh_token_middleware},
+    middlewares::{
+        auth_middleware::auth_middleware, refresh_token_middleware::refresh_token_middleware,
+    },
 };
 
 pub fn auth_routes(app_state: Arc<AppState>) -> Router {
