@@ -16,7 +16,7 @@ use crate::media::{
         media_download_payload_dto::MediaDownloadPayloadDto,
         media_list_payload_dto::MediaListPayloadDto, media_list_response_dto::MediaListResponseDto,
     },
-    enums::media_type::MediaType,
+    enums::media_type_enum::MediaTypeEnum,
     services::photo::PhotoService,
     services::{
         download::DownloadService,
@@ -72,15 +72,15 @@ pub async fn get_thumbnail(
         .await
         .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
 
-    if media.media_type != MediaType::Photo && media.media_type != MediaType::Video {
+    if media.media_type != MediaTypeEnum::Photo && media.media_type != MediaTypeEnum::Video {
         return Err(AppError::NotFound("Thumbnail not found".into()));
     }
 
     let mut thumbnail_path = String::new();
 
-    if media.media_type == MediaType::Photo {
+    if media.media_type == MediaTypeEnum::Photo {
         thumbnail_path = format!("./uploads/{}/thumbnails/{}", user.uuid, media.filename);
-    } else if media.media_type == MediaType::Video {
+    } else if media.media_type == MediaTypeEnum::Video {
         let stem = std::path::Path::new(&media.filename)
             .file_stem() // gets the filename without extension
             .and_then(|s| s.to_str())
@@ -94,7 +94,7 @@ pub async fn get_thumbnail(
         .await
         .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?
     {
-        if media.media_type == MediaType::Photo {
+        if media.media_type == MediaTypeEnum::Photo {
             thumbnail_path = PhotoService::generate_photo_thumbnail(
                 &media.filepath,
                 &media.filename,
@@ -103,7 +103,7 @@ pub async fn get_thumbnail(
             )
             .await
             .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
-        } else if media.media_type == MediaType::Video {
+        } else if media.media_type == MediaTypeEnum::Video {
             thumbnail_path = VideoService::generate_video_thumbnail(
                 &media.filepath,
                 &media.filename,

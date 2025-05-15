@@ -3,7 +3,7 @@ use serde::Serialize;
 use uuid::Uuid;
 
 use crate::media::{
-    enums::media_type::MediaType,
+    enums::media_type_enum::MediaTypeEnum,
     models::{media::Media, media_metadata::MediaMetadata},
 };
 
@@ -14,7 +14,7 @@ pub struct MediaDetailResponseDto {
     pub user_id: i32,
     pub filename: String,
     pub filepath: String,
-    pub media_type: MediaType,
+    pub media_type: MediaTypeEnum,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
     pub deleted_at: Option<DateTime<Utc>>,

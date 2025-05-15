@@ -6,15 +6,15 @@ use std::{
 };
 
 use crate::errors::app_error::AppError;
-use crate::media::models::media_metadata::MediaMetadata;
 use crate::media::{
-    enums::media_type::MediaType,
-    services::{file::FileService, media::MediaService, media_metadata::MediaMetadataService},
+    enums::media_type_enum::MediaTypeEnum,
+    models::media_metadata::MediaMetadata,
+    services::{
+        file::FileService, media::MediaService, media_metadata::MediaMetadataService,
+        photo::PhotoService, video::VideoService,
+    },
 };
 use crate::user::{models::user::User, services::user::UserService};
-
-use super::photo::PhotoService;
-use super::video::VideoService;
 
 pub struct UploadService;
 
@@ -95,7 +95,7 @@ impl UploadService {
                 .map(|t| t.mime_type().to_string())
                 .unwrap_or_else(|| "application/octet-stream".to_string());
 
-            let media_type = MediaType::from_mime(&mime_type) as i32;
+            let media_type = MediaTypeEnum::from_mime(&mime_type) as i32;
 
             let media = MediaService::create_media(db, user, &file_name, &final_path, media_type)
                 .await
