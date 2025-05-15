@@ -15,14 +15,13 @@ use crate::media::{
         media_detail_response_dto::MediaDetailResponseDto,
         media_download_payload_dto::MediaDownloadPayloadDto,
         media_list_payload_dto::MediaListPayloadDto, media_list_response_dto::MediaListResponseDto,
+        upload_response_dto::UploadResponseDto,
     },
     enums::media_type_enum::MediaTypeEnum,
     services::photo::PhotoService,
     services::{
-        download::DownloadService,
-        media::MediaService,
-        media_metadata::MediaMetadataService,
-        upload::{UploadResponse, UploadService},
+        download::DownloadService, media::MediaService, media_metadata::MediaMetadataService,
+        upload::UploadService,
     },
 };
 use crate::user::models::user_model::UserModel;
@@ -31,7 +30,7 @@ pub async fn upload_chunk(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<UserModel>,
     multipart: Multipart,
-) -> Result<Json<UploadResponse>, AppError> {
+) -> Result<Json<UploadResponseDto>, AppError> {
     UploadService::upload_chunk(&state.db, &user, multipart).await
 }
 

@@ -1,5 +1,4 @@
 use axum::{extract::Multipart, Json};
-use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, File, OpenOptions},
     io::Write,
@@ -7,6 +6,7 @@ use std::{
 
 use crate::errors::app_error::AppError;
 use crate::media::{
+    dtos::upload_response_dto::UploadResponseDto,
     enums::media_type_enum::MediaTypeEnum,
     models::media_metadata_model::MediaMetadataModel,
     services::{
@@ -18,20 +18,12 @@ use crate::user::{models::user_model::UserModel, services::user::UserService};
 
 pub struct UploadService {}
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UploadResponse {
-    pub success: bool,
-    pub message: String,
-    pub chunk_received: usize,
-    pub file_id: Option<String>,
-}
-
 impl UploadService {
     pub async fn upload_chunk(
         db: &sqlx::PgPool,
         user: &UserModel,
         mut multipart: Multipart,
-    ) -> Result<Json<UploadResponse>, AppError> {
+    ) -> Result<Json<UploadResponseDto>, AppError> {
         let mut file_name = String::new();
         let mut chunk_number = 0;
         let mut total_chunks = 0;
@@ -115,7 +107,7 @@ impl UploadService {
             }
         }
 
-        Ok(Json(UploadResponse {
+        Ok(Json(UploadResponseDto {
             success: true,
             message: "Chunk uploaded".into(),
             chunk_received: chunk_number,
