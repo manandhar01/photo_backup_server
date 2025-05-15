@@ -9,7 +9,7 @@ use tokio_util::io::ReaderStream;
 
 use crate::errors::app_error::AppError;
 use crate::media::{
-    dtos::media_download_payload::MediaDownloadPayload,
+    dtos::media_download_payload_dto::MediaDownloadPayloadDto,
     models::{media::Media, media_metadata::MediaMetadata},
 };
 
@@ -18,7 +18,7 @@ pub struct DownloadService {}
 impl DownloadService {
     pub async fn download_chunk(
         file_path: &str,
-        payload: &MediaDownloadPayload,
+        payload: &MediaDownloadPayloadDto,
     ) -> Result<(Body, usize), AppError> {
         let mut file = File::open(file_path)
             .await

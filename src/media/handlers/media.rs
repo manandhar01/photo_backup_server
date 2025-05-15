@@ -12,8 +12,9 @@ use crate::errors::app_error::AppError;
 use crate::media::services::video::VideoService;
 use crate::media::{
     dtos::{
-        media_detail_response::MediaDetailResponse, media_download_payload::MediaDownloadPayload,
-        media_list_payload::MediaListPayload, media_list_response::MediaListResponse,
+        media_detail_response_dto::MediaDetailResponseDto,
+        media_download_payload_dto::MediaDownloadPayloadDto,
+        media_list_payload_dto::MediaListPayloadDto, media_list_response_dto::MediaListResponseDto,
     },
     enums::media_type::MediaType,
     services::photo::PhotoService,
@@ -38,7 +39,7 @@ pub async fn download_chunk(
     State(state): State<Arc<AppState>>,
     Extension(user): Extension<User>,
     Path(id): Path<i32>,
-    Json(payload): Json<MediaDownloadPayload>,
+    Json(payload): Json<MediaDownloadPayloadDto>,
 ) -> Result<Response, AppError> {
     let media = MediaService::check_media_access(&state.db, id, user.id)
         .await
@@ -138,8 +139,8 @@ pub async fn stream_media(
 
 pub async fn get_media_list(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<MediaListPayload>,
-) -> Result<Json<MediaListResponse>, AppError> {
+    Json(payload): Json<MediaListPayloadDto>,
+) -> Result<Json<MediaListResponseDto>, AppError> {
     match MediaService::media_list(&state.db, payload).await {
         Ok(response) => Ok(Json(response)),
         Err(_) => Err(AppError::InternalServerError(
@@ -151,7 +152,7 @@ pub async fn get_media_list(
 pub async fn get_media_detail(
     State(state): State<Arc<AppState>>,
     Path(id): Path<i32>,
-) -> Result<Json<MediaDetailResponse>, AppError> {
+) -> Result<Json<MediaDetailResponseDto>, AppError> {
     let media = MediaService::media_detail(&state.db, id)
         .await
         .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?;

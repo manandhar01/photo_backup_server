@@ -3,8 +3,8 @@ use chrono::Utc;
 use crate::auth::services::auth::AuthService;
 use crate::media::{
     dtos::{
-        media_list_payload::MediaListPayload,
-        media_list_response::{MediaListResponse, PaginationMetadata},
+        media_list_payload_dto::MediaListPayloadDto, media_list_response_dto::MediaListResponseDto,
+        pagination_metadat_dto::PaginationMetadataDto,
     },
     models::media::Media,
 };
@@ -41,8 +41,8 @@ impl MediaService {
 
     pub async fn media_list(
         pool: &sqlx::PgPool,
-        payload: MediaListPayload,
-    ) -> Result<MediaListResponse, sqlx::Error> {
+        payload: MediaListPayloadDto,
+    ) -> Result<MediaListResponseDto, sqlx::Error> {
         let limit = payload.limit.unwrap_or(20);
         let offset = payload.offset.unwrap_or(0);
         let user_id = AuthService::id();
@@ -62,9 +62,9 @@ impl MediaService {
             .await?
             .unwrap_or(0);
 
-        let response = MediaListResponse {
+        let response = MediaListResponseDto {
             data: media,
-            pagination: PaginationMetadata {
+            pagination: PaginationMetadataDto {
                 limit,
                 offset,
                 total,

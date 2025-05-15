@@ -8,7 +8,7 @@ use crate::media::{
 };
 
 #[derive(Serialize)]
-pub struct MediaDetailResponse {
+pub struct MediaDetailResponseDto {
     pub id: i32,
     pub uuid: Uuid,
     pub user_id: i32,
@@ -23,7 +23,7 @@ pub struct MediaDetailResponse {
     pub metadata: Option<MediaMetadata>,
 }
 
-impl From<(Media, MediaMetadata)> for MediaDetailResponse {
+impl From<(Media, MediaMetadata)> for MediaDetailResponseDto {
     fn from((media, metadata): (Media, MediaMetadata)) -> Self {
         Self {
             id: media.id,
