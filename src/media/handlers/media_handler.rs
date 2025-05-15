@@ -9,7 +9,6 @@ use tokio::fs;
 
 use crate::app::AppState;
 use crate::errors::app_error::AppError;
-use crate::media::services::video::VideoService;
 use crate::media::{
     dtos::{
         media_detail_response_dto::MediaDetailResponseDto,
@@ -18,10 +17,10 @@ use crate::media::{
         upload_response_dto::UploadResponseDto,
     },
     enums::media_type_enum::MediaTypeEnum,
-    services::photo::PhotoService,
     services::{
-        download::DownloadService, media::MediaService, media_metadata::MediaMetadataService,
-        upload::UploadService,
+        download_service::DownloadService, media_metadata_service::MediaMetadataService,
+        media_service::MediaService, photo_service::PhotoService, upload_service::UploadService,
+        video_service::VideoService,
     },
 };
 use crate::user::models::user_model::UserModel;

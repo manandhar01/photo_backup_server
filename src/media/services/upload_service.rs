@@ -10,8 +10,8 @@ use crate::media::{
     enums::media_type_enum::MediaTypeEnum,
     models::media_metadata_model::MediaMetadataModel,
     services::{
-        file::FileService, media::MediaService, media_metadata::MediaMetadataService,
-        photo::PhotoService, video::VideoService,
+        file_service::FileService, media_metadata_service::MediaMetadataService,
+        media_service::MediaService, photo_service::PhotoService, video_service::VideoService,
     },
 };
 use crate::user::{models::user_model::UserModel, services::user::UserService};
