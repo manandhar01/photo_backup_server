@@ -23,7 +23,7 @@ use crate::auth::{
 use crate::errors::app_error::AppError;
 use crate::user::{
     dtos::user_response_dto::UserResponseDto, models::user_model::UserModel,
-    services::user::UserService,
+    services::user_service::UserService,
 };
 use crate::utility::hash::hash_password;
 

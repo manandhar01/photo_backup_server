@@ -8,7 +8,7 @@ use uuid::Uuid;
 use crate::app::AppState;
 use crate::auth::services::auth_service::AuthService;
 use crate::errors::app_error::AppError;
-use crate::user::{dtos::user_response_dto::UserResponseDto, services::user::UserService};
+use crate::user::{dtos::user_response_dto::UserResponseDto, services::user_service::UserService};
 
 pub async fn get_user_by_uuid(
     State(state): State<Arc<AppState>>,

@@ -10,7 +10,7 @@ use crate::auth::{
     dtos::refresh_token_payload_dto::RefreshTokenPayloadDto, services::auth_service::AuthService,
 };
 use crate::errors::app_error::AppError;
-use crate::user::services::user::UserService;
+use crate::user::services::user_service::UserService;
 
 pub async fn refresh_token_middleware(
     State(state): State<Arc<AppState>>,
