@@ -19,13 +19,15 @@ use crate::auth::{
     services::{login_activity::LoginActivityService, refresh_token::RefreshTokenService},
 };
 use crate::errors::app_error::AppError;
-use crate::user::{dtos::user::UserResponse, models::user::User, services::user::UserService};
+use crate::user::{
+    dtos::user_response_dto::UserResponseDto, models::user::User, services::user::UserService,
+};
 use crate::utility::hash::hash_password;
 
 pub async fn register(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<RegisterRequestDto>,
-) -> Result<Json<UserResponse>, AppError> {
+) -> Result<Json<UserResponseDto>, AppError> {
     let hashed_password = hash_password(&payload.password)?;
 
     let user = UserService::create_user(

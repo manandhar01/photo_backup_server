@@ -8,13 +8,12 @@ use uuid::Uuid;
 use crate::app::AppState;
 use crate::auth::services::auth::AuthService;
 use crate::errors::app_error::AppError;
-use crate::user::dtos::user::UserResponse;
-use crate::user::services::user::UserService;
+use crate::user::{dtos::user_response_dto::UserResponseDto, services::user::UserService};
 
 pub async fn get_user_by_uuid(
     State(state): State<Arc<AppState>>,
     Path(uuid): Path<Uuid>,
-) -> Result<Json<UserResponse>, AppError> {
+) -> Result<Json<UserResponseDto>, AppError> {
     let user = UserService::find_user_by_uuid(&state.db, uuid)
         .await
         .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?;
@@ -28,7 +27,7 @@ pub async fn get_user_by_uuid(
 pub async fn get_user_by_id(
     State(state): State<Arc<AppState>>,
     Path(user_id): Path<i32>,
-) -> Result<Json<UserResponse>, AppError> {
+) -> Result<Json<UserResponseDto>, AppError> {
     let user = UserService::find_user_by_id(&state.db, user_id)
         .await
         .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?;
@@ -42,7 +41,7 @@ pub async fn get_user_by_id(
 pub async fn delete_user(
     State(state): State<Arc<AppState>>,
     Path(user_id): Path<i32>,
-) -> Result<Json<UserResponse>, AppError> {
+) -> Result<Json<UserResponseDto>, AppError> {
     let user = UserService::delete_user(&state.db, user_id)
         .await
         .map_err(|_| AppError::InternalServerError("Something went wrong".to_string()))?;
@@ -53,7 +52,9 @@ pub async fn delete_user(
     }
 }
 
-pub async fn get_self(State(state): State<Arc<AppState>>) -> Result<Json<UserResponse>, AppError> {
+pub async fn get_self(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<UserResponseDto>, AppError> {
     match AuthService::id() {
         Some(user_id) => {
             let user = UserService::find_user_by_id(&state.db, user_id)

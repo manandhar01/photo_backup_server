@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::user::models::user::User;
 
 #[derive(Debug, Serialize)]
-pub struct UserResponse {
+pub struct UserResponseDto {
     pub id: i32,
     pub uuid: Uuid,
     pub email: String,
@@ -17,9 +17,9 @@ pub struct UserResponse {
     pub updated_by: Option<i32>,
 }
 
-impl From<User> for UserResponse {
+impl From<User> for UserResponseDto {
     fn from(user: User) -> Self {
-        UserResponse {
+        UserResponseDto {
             id: user.id,
             uuid: user.uuid,
             email: user.email,
