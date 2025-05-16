@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use crate::app::AppState;
 use crate::auth::{
-    handlers::auth_handler::{login, refresh_tokens, register, verify},
+    handlers::{login, refresh_tokens, register, verify},
     middlewares::{
         auth_middleware::auth_middleware, refresh_token_middleware::refresh_token_middleware,
     },

@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use crate::app::AppState;
 use crate::auth::middlewares::auth_middleware::auth_middleware;
-use crate::media::handlers::media_handler::{
+use crate::media::handlers::{
     download_chunk, get_media_detail, get_media_list, get_thumbnail, stream_media, upload_chunk,
 };
 
