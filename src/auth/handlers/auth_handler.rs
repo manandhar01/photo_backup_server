@@ -19,9 +19,7 @@ use crate::auth::{
     },
 };
 use crate::errors::app_error::AppError;
-use crate::user::{
-    dtos::UserResponseDto, models::user_model::UserModel, services::user_service::UserService,
-};
+use crate::user::{dtos::UserResponseDto, models::UserModel, services::user_service::UserService};
 use crate::utility::hash::hash_password;
 
 pub async fn register(

@@ -3,7 +3,7 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 
 use crate::auth::dtos::ClaimsDto;
 use crate::config::{get_access_token_expiry, get_jwt_secret, get_refresh_token_expiry};
-use crate::user::models::user_model::UserModel;
+use crate::user::models::UserModel;
 
 tokio::task_local! {
     pub static CURRENT_USER: UserModel;

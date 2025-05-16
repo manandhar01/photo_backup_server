@@ -21,7 +21,7 @@ use crate::media::{
         video_service::VideoService,
     },
 };
-use crate::user::models::user_model::UserModel;
+use crate::user::models::UserModel;
 
 pub async fn upload_chunk(
     State(state): State<Arc<AppState>>,

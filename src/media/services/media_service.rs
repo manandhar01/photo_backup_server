@@ -5,7 +5,7 @@ use crate::media::{
     dtos::{MediaListPayloadDto, MediaListResponseDto, PaginationMetadataDto},
     models::MediaModel,
 };
-use crate::user::models::user_model::UserModel;
+use crate::user::models::UserModel;
 
 pub struct MediaService {}
 

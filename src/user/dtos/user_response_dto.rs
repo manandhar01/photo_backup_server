@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::user::models::user_model::UserModel;
+use crate::user::models::UserModel;
 
 #[derive(Debug, Serialize)]
 pub struct UserResponseDto {

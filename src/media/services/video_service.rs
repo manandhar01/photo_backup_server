@@ -5,9 +5,8 @@ use std::{
     process::{Command, Stdio},
 };
 
-use crate::{
-    media::models::media_metadata_model::MediaMetadataModel, user::models::user_model::UserModel,
-};
+use crate::media::models::MediaMetadataModel;
+use crate::user::models::UserModel;
 
 pub struct VideoService {}
 

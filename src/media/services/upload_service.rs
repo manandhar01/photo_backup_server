@@ -8,13 +8,13 @@ use crate::errors::app_error::AppError;
 use crate::media::{
     dtos::UploadResponseDto,
     enums::media_type_enum::MediaTypeEnum,
-    models::media_metadata_model::MediaMetadataModel,
+    models::MediaMetadataModel,
     services::{
         file_service::FileService, media_metadata_service::MediaMetadataService,
         media_service::MediaService, photo_service::PhotoService, video_service::VideoService,
     },
 };
-use crate::user::{models::user_model::UserModel, services::user_service::UserService};
+use crate::user::{models::UserModel, services::user_service::UserService};
 
 pub struct UploadService {}
 
