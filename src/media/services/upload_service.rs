@@ -9,10 +9,7 @@ use crate::media::{
     dtos::UploadResponseDto,
     enums::media_type_enum::MediaTypeEnum,
     models::MediaMetadataModel,
-    services::{
-        file_service::FileService, media_metadata_service::MediaMetadataService,
-        media_service::MediaService, photo_service::PhotoService, video_service::VideoService,
-    },
+    services::{FileService, MediaMetadataService, MediaService, PhotoService, VideoService},
 };
 use crate::user::{models::UserModel, services::user_service::UserService};
 

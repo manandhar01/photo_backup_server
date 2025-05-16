@@ -16,9 +16,8 @@ use crate::media::{
     },
     enums::media_type_enum::MediaTypeEnum,
     services::{
-        download_service::DownloadService, media_metadata_service::MediaMetadataService,
-        media_service::MediaService, photo_service::PhotoService, upload_service::UploadService,
-        video_service::VideoService,
+        DownloadService, MediaMetadataService, MediaService, PhotoService, UploadService,
+        VideoService,
     },
 };
 use crate::user::models::UserModel;
