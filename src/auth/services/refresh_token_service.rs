@@ -2,9 +2,7 @@ use axum::Json;
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
-use crate::auth::{
-    dtos::LoginResponseDto, models::RefreshTokenModel, services::auth_service::AuthService,
-};
+use crate::auth::{dtos::LoginResponseDto, models::RefreshTokenModel, services::AuthService};
 use crate::errors::app_error::AppError;
 use crate::user::models::UserModel;
 

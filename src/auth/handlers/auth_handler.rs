@@ -14,9 +14,7 @@ use crate::auth::{
         LoginActivityDto, LoginRequestDto, LoginResponseDto, RefreshTokenPayloadDto,
         RegisterRequestDto, VerifyTokenResponseDto,
     },
-    services::{
-        login_activity_service::LoginActivityService, refresh_token_service::RefreshTokenService,
-    },
+    services::{LoginActivityService, RefreshTokenService},
 };
 use crate::errors::app_error::AppError;
 use crate::user::{dtos::UserResponseDto, models::UserModel, services::user_service::UserService};
