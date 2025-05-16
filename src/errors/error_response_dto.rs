@@ -8,12 +8,12 @@ use serde::Serialize;
 use super::app_error::AppError;
 
 #[derive(Debug, Serialize)]
-pub struct ErrorResponse {
+pub struct ErrorResponseDto {
     pub message: String,
     pub status: u16,
 }
 
-impl ErrorResponse {
+impl ErrorResponseDto {
     pub fn new(status: StatusCode, message: impl Into<String>) -> Self {
         Self {
             status: status.as_u16(),
@@ -22,7 +22,7 @@ impl ErrorResponse {
     }
 }
 
-impl IntoResponse for ErrorResponse {
+impl IntoResponse for ErrorResponseDto {
     fn into_response(self) -> Response {
         let status = StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
         let body = Json(&self);
@@ -31,18 +31,20 @@ impl IntoResponse for ErrorResponse {
     }
 }
 
-impl From<AppError> for ErrorResponse {
+impl From<AppError> for ErrorResponseDto {
     fn from(error: AppError) -> Self {
         match error {
-            AppError::BadRequest(message) => ErrorResponse::new(StatusCode::BAD_REQUEST, message),
+            AppError::BadRequest(message) => {
+                ErrorResponseDto::new(StatusCode::BAD_REQUEST, message)
+            }
             AppError::Unauthorized(message) => {
-                ErrorResponse::new(StatusCode::UNAUTHORIZED, message)
+                ErrorResponseDto::new(StatusCode::UNAUTHORIZED, message)
             }
-            AppError::NotFound(message) => ErrorResponse::new(StatusCode::NOT_FOUND, message),
+            AppError::NotFound(message) => ErrorResponseDto::new(StatusCode::NOT_FOUND, message),
             AppError::InternalServerError(message) => {
-                ErrorResponse::new(StatusCode::INTERNAL_SERVER_ERROR, message)
+                ErrorResponseDto::new(StatusCode::INTERNAL_SERVER_ERROR, message)
             }
-            AppError::EndOfFile => ErrorResponse::new(StatusCode::NO_CONTENT, "".to_string()),
+            AppError::EndOfFile => ErrorResponseDto::new(StatusCode::NO_CONTENT, "".to_string()),
         }
     }
 }

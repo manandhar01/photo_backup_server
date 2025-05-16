@@ -1,6 +1,6 @@
 use axum::response::{IntoResponse, Response};
 
-use crate::errors::error_response::ErrorResponse;
+use crate::errors::error_response_dto::ErrorResponseDto;
 
 #[derive(Debug)]
 pub enum AppError {
@@ -13,6 +13,6 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        ErrorResponse::from(self).into_response()
+        ErrorResponseDto::from(self).into_response()
     }
 }
