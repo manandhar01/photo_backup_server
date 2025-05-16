@@ -10,7 +10,7 @@ use tokio_util::io::ReaderStream;
 use crate::errors::app_error::AppError;
 use crate::media::{
     dtos::MediaDownloadPayloadDto,
-    models::{media_metadata_model::MediaMetadataModel, media_model::MediaModel},
+    models::{MediaMetadataModel, MediaModel},
 };
 
 pub struct DownloadService {}

@@ -3,7 +3,7 @@ use chrono::Utc;
 use crate::auth::services::auth_service::AuthService;
 use crate::media::{
     dtos::{MediaListPayloadDto, MediaListResponseDto, PaginationMetadataDto},
-    models::media_model::MediaModel,
+    models::MediaModel,
 };
 use crate::user::models::user_model::UserModel;
 

@@ -2,7 +2,7 @@ use chrono::Utc;
 use sqlx::PgPool;
 
 use crate::auth::services::auth_service::AuthService;
-use crate::media::models::{media_metadata_model::MediaMetadataModel, media_model::MediaModel};
+use crate::media::models::{MediaMetadataModel, MediaModel};
 
 pub struct MediaMetadataService {}
 

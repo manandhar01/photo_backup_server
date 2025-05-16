@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::media::{
     enums::media_type_enum::MediaTypeEnum,
-    models::{media_metadata_model::MediaMetadataModel, media_model::MediaModel},
+    models::{MediaMetadataModel, MediaModel},
 };
 
 #[derive(Serialize)]
