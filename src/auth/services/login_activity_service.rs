@@ -1,6 +1,6 @@
 use sqlx::PgPool;
 
-use crate::auth::{dtos::LoginActivityDto, models::login_activity_model::LoginActivityModel};
+use crate::auth::{dtos::LoginActivityDto, models::LoginActivityModel};
 
 pub struct LoginActivityService {}
 
