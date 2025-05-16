@@ -9,7 +9,7 @@ use tokio_util::io::ReaderStream;
 
 use crate::errors::app_error::AppError;
 use crate::media::{
-    dtos::media_download_payload_dto::MediaDownloadPayloadDto,
+    dtos::MediaDownloadPayloadDto,
     models::{media_metadata_model::MediaMetadataModel, media_model::MediaModel},
 };
 

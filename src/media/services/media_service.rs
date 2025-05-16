@@ -2,10 +2,7 @@ use chrono::Utc;
 
 use crate::auth::services::auth_service::AuthService;
 use crate::media::{
-    dtos::{
-        media_list_payload_dto::MediaListPayloadDto, media_list_response_dto::MediaListResponseDto,
-        pagination_metadat_dto::PaginationMetadataDto,
-    },
+    dtos::{MediaListPayloadDto, MediaListResponseDto, PaginationMetadataDto},
     models::media_model::MediaModel,
 };
 use crate::user::models::user_model::UserModel;

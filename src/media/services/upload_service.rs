@@ -6,7 +6,7 @@ use std::{
 
 use crate::errors::app_error::AppError;
 use crate::media::{
-    dtos::upload_response_dto::UploadResponseDto,
+    dtos::UploadResponseDto,
     enums::media_type_enum::MediaTypeEnum,
     models::media_metadata_model::MediaMetadataModel,
     services::{
