@@ -8,9 +8,8 @@ use std::{
     str::FromStr,
 };
 
-use crate::{
-    media::models::media_metadata_model::MediaMetadataModel, user::models::user_model::UserModel,
-};
+use crate::media::models::media_metadata_model::MediaMetadataModel;
+use crate::user::models::user_model::UserModel;
 
 pub struct PhotoService {}
 
