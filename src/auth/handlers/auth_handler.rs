@@ -17,7 +17,7 @@ use crate::auth::{
     services::{LoginActivityService, RefreshTokenService},
 };
 use crate::errors::app_error::AppError;
-use crate::user::{dtos::UserResponseDto, models::UserModel, services::user_service::UserService};
+use crate::user::{dtos::UserResponseDto, models::UserModel, services::UserService};
 use crate::utility::hash::hash_password;
 
 pub async fn register(

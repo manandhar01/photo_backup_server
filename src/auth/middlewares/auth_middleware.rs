@@ -8,7 +8,7 @@ use std::sync::Arc;
 use crate::app::AppState;
 use crate::auth::services::AuthService;
 use crate::errors::app_error::AppError;
-use crate::user::services::user_service::UserService;
+use crate::user::services::UserService;
 
 pub async fn auth_middleware(
     State(state): State<Arc<AppState>>,

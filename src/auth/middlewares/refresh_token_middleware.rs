@@ -8,7 +8,7 @@ use std::sync::Arc;
 use crate::app::AppState;
 use crate::auth::{dtos::refresh_token_payload_dto::RefreshTokenPayloadDto, services::AuthService};
 use crate::errors::app_error::AppError;
-use crate::user::services::user_service::UserService;
+use crate::user::services::UserService;
 
 pub async fn refresh_token_middleware(
     State(state): State<Arc<AppState>>,

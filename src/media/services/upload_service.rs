@@ -11,7 +11,7 @@ use crate::media::{
     models::MediaMetadataModel,
     services::{FileService, MediaMetadataService, MediaService, PhotoService, VideoService},
 };
-use crate::user::{models::UserModel, services::user_service::UserService};
+use crate::user::{models::UserModel, services::UserService};
 
 pub struct UploadService {}
 
