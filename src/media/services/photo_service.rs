@@ -5,6 +5,7 @@ use imageinfo::ImageInfo;
 use std::{
     fs::{self, File},
     io::Seek,
+    path::Path,
     str::FromStr,
 };
 
@@ -96,14 +97,19 @@ impl PhotoService {
         max_width: u32,
         user: &UserModel,
     ) -> Result<String, Box<dyn std::error::Error>> {
-        let img = image::open(filepath)?;
-
-        let thumbnail = img.resize(max_width, max_width, FilterType::Lanczos3);
-
         let output_path = format!("./uploads/{}/thumbnails", user.uuid);
         fs::create_dir_all(&output_path)?;
 
-        let thumbnail_path = format!("{}/{}", output_path, filename);
+        let stem = Path::new(filename)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .ok_or("Invalid filename")?;
+
+        let thumbnail_path = format!("{}/{}.webp", output_path, stem);
+
+        let img = image::open(filepath)?;
+
+        let thumbnail = img.resize(max_width, max_width, FilterType::Lanczos3);
 
         thumbnail.save(&thumbnail_path)?;
 

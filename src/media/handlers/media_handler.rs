@@ -71,19 +71,13 @@ pub async fn get_thumbnail(
         return Err(AppError::NotFound("Thumbnail not found".into()));
     }
 
-    let mut thumbnail_path = String::new();
+    let stem = std::path::Path::new(&media.filename)
+        .file_stem() // gets the filename without extension
+        .and_then(|s| s.to_str())
+        .ok_or("Invalid filename")
+        .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
 
-    if media.media_type == MediaTypeEnum::Photo {
-        thumbnail_path = format!("./uploads/{}/thumbnails/{}", user.uuid, media.filename);
-    } else if media.media_type == MediaTypeEnum::Video {
-        let stem = std::path::Path::new(&media.filename)
-            .file_stem() // gets the filename without extension
-            .and_then(|s| s.to_str())
-            .ok_or("Invalid filename")
-            .map_err(|_| AppError::InternalServerError("Something went wrong".into()))?;
-
-        thumbnail_path = format!("./uploads/{}/thumbnails/{}.webp", user.uuid, stem);
-    }
+    let mut thumbnail_path = format!("./uploads/{}/thumbnails/{}.webp", user.uuid, stem);
 
     if !fs::try_exists(thumbnail_path.clone())
         .await
