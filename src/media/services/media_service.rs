@@ -2,7 +2,7 @@ use chrono::Utc;
 
 use crate::auth::services::AuthService;
 use crate::media::{
-    dtos::{MediaListPayloadDto, MediaListResponseDto, PaginationMetadataDto},
+    dtos::{MediaListPayloadDto, MediaListResponseDto, MediaListRow, PaginationMetadataDto},
     models::MediaModel,
 };
 use crate::user::models::UserModel;
@@ -45,8 +45,8 @@ impl MediaService {
         let user_id = AuthService::id();
 
         let media = sqlx::query_as!(
-            MediaModel,
-            r#"select * from media where deleted_at is null and user_id = $1 order by id desc limit $2 offset $3"#,
+            MediaListRow,
+            r#"select a.*, to_jsonb(b) as media_metadata from media a left join media_metadata b on a.id = b.media_id where a.deleted_at is null and a.user_id = $1 order by a.id desc limit $2 offset $3"#,
             user_id,
             limit,
             offset
