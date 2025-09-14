@@ -95,10 +95,7 @@ impl DownloadService {
             .header("Content-Type", mime_type)
             .header("Content-Length", chunk_size.to_string())
             .header("Accept-Ranges", "bytes")
-            .header(
-                "Content-Range",
-                format!("bytes {}-{}/{}", start, end, file_size),
-            )
+            .header("Content-Range", format!("bytes {start}-{end}/{file_size}"))
             .body(axum::body::Body::from_stream(stream))
             .unwrap();
 

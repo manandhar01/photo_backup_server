@@ -57,7 +57,7 @@ pub async fn login(
         Err(e) => {
             match LoginActivityService::create_log(&state.db, activity).await {
                 Ok(_activity) => {}
-                Err(e) => eprintln!("Failed to save login activity: {}", e),
+                Err(e) => eprintln!("Failed to save login activity: {e}"),
             };
 
             warn!("Login failed: email={}, reason={}", &payload.email, e);
@@ -73,7 +73,7 @@ pub async fn login(
             if !user.verify_password(&payload.password) {
                 match LoginActivityService::create_log(&state.db, activity).await {
                     Ok(_activity) => {}
-                    Err(e) => eprintln!("Failed to save login activity: {}", e),
+                    Err(e) => eprintln!("Failed to save login activity: {e}"),
                 };
 
                 println!("here");
@@ -95,7 +95,7 @@ pub async fn login(
                 Err(e) => {
                     match LoginActivityService::create_log(&state.db, activity).await {
                         Ok(_activity) => {}
-                        Err(e) => eprintln!("Failed to save login activity: {}", e),
+                        Err(e) => eprintln!("Failed to save login activity: {e}"),
                     };
 
                     warn!("Login failed: email={}, reason={:?}", &payload.email, e);
@@ -107,7 +107,7 @@ pub async fn login(
             activity.success = true;
             match LoginActivityService::create_log(&state.db, activity).await {
                 Ok(_activity) => {}
-                Err(e) => eprintln!("Failed to save login activity: {}", e),
+                Err(e) => eprintln!("Failed to save login activity: {e}"),
             };
 
             info!(
@@ -120,7 +120,7 @@ pub async fn login(
         None => {
             match LoginActivityService::create_log(&state.db, activity).await {
                 Ok(_activity) => {}
-                Err(e) => eprintln!("Failed to save login activity: {}", e),
+                Err(e) => eprintln!("Failed to save login activity: {e}"),
             };
 
             warn!(
@@ -164,7 +164,7 @@ pub async fn refresh_tokens(
         Err(e) => {
             match LoginActivityService::create_log(&state.db, activity).await {
                 Ok(_activity) => {}
-                Err(e) => eprintln!("Failed to save login activity: {}", e),
+                Err(e) => eprintln!("Failed to save login activity: {e}"),
             };
 
             warn!("Login failed: email={}, reason={:?}", &user.email, e);
@@ -177,7 +177,7 @@ pub async fn refresh_tokens(
     activity.success = true;
     match LoginActivityService::create_log(&state.db, activity).await {
         Ok(_activity) => {}
-        Err(e) => eprintln!("Failed to save login activity: {}", e),
+        Err(e) => eprintln!("Failed to save login activity: {e}"),
     };
 
     info!(

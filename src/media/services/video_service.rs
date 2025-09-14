@@ -48,7 +48,7 @@ impl VideoService {
                 }
             }
             Err(e) => {
-                eprintln!("Could not analyze file with ffprobe: {:?}", e);
+                eprintln!("Could not analyze file with ffprobe: {e}");
             }
         }
     }
@@ -67,7 +67,7 @@ impl VideoService {
             .and_then(|s| s.to_str())
             .ok_or("Invalid filename")?;
 
-        let thumbnail_path = format!("{}/{}.webp", output_path, stem);
+        let thumbnail_path = format!("{output_path}/{stem}.webp");
 
         let status = Command::new("ffmpeg")
             .args([
@@ -82,7 +82,7 @@ impl VideoService {
                 "-i",
                 filepath,
                 "-vf",
-                &format!("fps=10, scale={}:-1:flags=lanczos", max_width),
+                &format!("fps=10, scale={max_width}:-1:flags=lanczos"),
                 "-loop",
                 "0",
                 &thumbnail_path,

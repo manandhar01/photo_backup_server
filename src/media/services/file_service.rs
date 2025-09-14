@@ -32,7 +32,7 @@ impl FileService {
 
         let result = hasher.finalize();
 
-        Ok(format!("{:x}", result))
+        Ok(format!("{result:x}"))
     }
 
     pub fn sanitize_filename(filename: &str) -> String {
@@ -57,7 +57,7 @@ impl FileService {
 
         let prefix = Self::generate_random_prefix(8);
 
-        format!("{}{}", prefix, sanitized)
+        format!("{prefix}{sanitized}")
     }
 
     fn generate_random_prefix(length: usize) -> String {

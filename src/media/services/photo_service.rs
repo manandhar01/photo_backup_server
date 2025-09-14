@@ -18,7 +18,7 @@ impl PhotoService {
     pub fn extract_photo_metadata(path: &str, metadata: &mut MediaMetadataModel) {
         let file = match File::open(path) {
             Ok(file) => file,
-            Err(e) => return eprintln!("{:?}", e),
+            Err(e) => return eprintln!("{e}"),
         };
 
         let mut bufreader = std::io::BufReader::new(file);
@@ -29,14 +29,14 @@ impl PhotoService {
                 metadata.height = Some(info.size.height as i32);
             }
             Err(e) => {
-                eprintln!("{:?}", e);
+                eprintln!("{e}");
             }
         }
 
         match bufreader.rewind() {
             Ok(_) => {}
             Err(e) => {
-                eprintln!("{:?}", e);
+                eprintln!("{e}");
             }
         }
 
@@ -86,7 +86,7 @@ impl PhotoService {
                 }
             }
             Err(e) => {
-                eprintln!("{:?}", e);
+                eprintln!("{e}");
             }
         }
     }
@@ -105,7 +105,7 @@ impl PhotoService {
             .and_then(|s| s.to_str())
             .ok_or("Invalid filename")?;
 
-        let thumbnail_path = format!("{}/{}.webp", output_path, stem);
+        let thumbnail_path = format!("{output_path}/{stem}.webp");
 
         let img = image::open(filepath)?;
 

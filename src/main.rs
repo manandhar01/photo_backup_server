@@ -26,7 +26,7 @@ async fn main() {
     let app = create_app().await;
 
     let port = env::var("PORT").unwrap_or_else(|_| "3000".to_string());
-    let addr = format!("0.0.0.0:{}", port);
+    let addr = format!("0.0.0.0:{port}");
 
     let listener = TcpListener::bind(&addr).await.unwrap();
 

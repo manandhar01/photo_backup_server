@@ -67,7 +67,7 @@ impl UploadService {
         fs::create_dir_all(&temp_dir)
             .map_err(|_| AppError::InternalServerError("Failed to create temp dir".into()))?;
 
-        let chunk_path = format!("{}/chunk_{}", temp_dir, chunk_number);
+        let chunk_path = format!("{temp_dir}/chunk_{chunk_number}");
         let mut file = File::create(&chunk_path)
             .map_err(|_| AppError::InternalServerError("Failed to create chunk file".into()))?;
         file.write_all(&chunk_data)
@@ -88,7 +88,7 @@ impl UploadService {
 
             let media = MediaService::create_media(db, user, &file_name, &final_path, media_type)
                 .await
-                .map_err(|e| AppError::InternalServerError(format!("DB error: {}", e)))?;
+                .map_err(|e| AppError::InternalServerError(format!("DB error: {e}")))?;
 
             let metadata = Self::extract_metadata(&final_path, &original_file_name).await?;
             let _media_metadata =
@@ -139,7 +139,7 @@ impl UploadService {
         let temp_dir = format!("./uploads/{}/temp/{}", user.uuid, original_file_name);
 
         for chunk_number in 0..total_chunks {
-            let chunk_path = format!("{}/chunk_{}", temp_dir, chunk_number);
+            let chunk_path = format!("{temp_dir}/chunk_{chunk_number}");
 
             let chunk_data = fs::read(&chunk_path)
                 .map_err(|_| (AppError::InternalServerError("Something went wrong".into())))?;

@@ -25,7 +25,7 @@ pub async fn create_app() -> Router {
             pool
         }
         Err(err) => {
-            println!("Failed to connect to the database: {:?}", err);
+            println!("Failed to connect to the database: {err}");
             std::process::exit(1)
         }
     };
